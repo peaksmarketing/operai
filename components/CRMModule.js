@@ -219,6 +219,8 @@ export default function CRMModule({ data, setData }) {
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [newCust, setNewCust] = useState({ name: "", ct: "", em: "", ind: "", phone: "" });
+  const [csvData, setCsvData] = useState(null);
+  const [csvError, setCsvError] = useState("");
 
   // Search filter
   const filtered = data.custs.filter(c => {
@@ -262,6 +264,7 @@ export default function CRMModule({ data, setData }) {
           <Btn variant={view === "pipe" ? "primary" : "default"} size="md" onClick={() => setView("pipe")}>パイプライン</Btn>
           <Btn variant={view === "analysis" ? "primary" : "default"} size="md" onClick={() => setView("analysis")}>CRM分析</Btn>
           <Btn variant={view === "ai" ? "primary" : "default"} size="md" onClick={() => setView("ai")}>AI予測</Btn>
+          <Btn variant={view === "csv" ? "primary" : "default"} size="md" onClick={() => setView("csv")}>CSV取込</Btn>
           <Btn variant="primary" size="md" onClick={() => setShowAdd(true)}><IcPlus /> 顧客登録</Btn>
         </div>
       </div>
@@ -584,6 +587,199 @@ export default function CRMModule({ data, setData }) {
             {predictions.length === 0 && (
               <Card style={{ textAlign: "center", padding: 40, color: "var(--text-tertiary)" }}>
                 進行中の案件がありません
+              </Card>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* CSV Import View */}
+      {view === "csv" && (() => {
+        const handleFileChange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          setCsvError("");
+          setCsvData(null);
+
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            try {
+              const text = ev.target.result;
+              const lines = text.split(/\r?\n/).filter(l => l.trim());
+              if (lines.length < 2) { setCsvError("データが2行以上必要です（1行目はヘッダー）"); return; }
+
+              const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+              const nameIdx = headers.findIndex(h => /会社名|顧客名|name|企業名/.test(h));
+              if (nameIdx < 0) { setCsvError("「会社名」列が見つかりません。列名を確認してください。"); return; }
+
+              const ctIdx = headers.findIndex(h => /担当|contact|連絡先/.test(h));
+              const emIdx = headers.findIndex(h => /メール|email|mail/.test(h));
+              const indIdx = headers.findIndex(h => /業種|industry/.test(h));
+              const phoneIdx = headers.findIndex(h => /電話|phone|tel/.test(h));
+
+              const rows = [];
+              for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+                const name = cols[nameIdx] || "";
+                if (!name) continue;
+                rows.push({
+                  name,
+                  ct: ctIdx >= 0 ? (cols[ctIdx] || "") : "",
+                  em: emIdx >= 0 ? (cols[emIdx] || "") : "",
+                  ind: indIdx >= 0 ? (cols[indIdx] || "") : "",
+                  phone: phoneIdx >= 0 ? (cols[phoneIdx] || "") : "",
+                  selected: true,
+                });
+              }
+              if (rows.length === 0) { setCsvError("有効なデータ行がありません"); return; }
+              setCsvData({ headers, rows, mapping: { nameIdx, ctIdx, emIdx, indIdx, phoneIdx } });
+            } catch (err) {
+              setCsvError("CSVの解析に失敗しました: " + err.message);
+            }
+          };
+          reader.readAsText(file, "UTF-8");
+        };
+
+        const handleBulkRegister = () => {
+          if (!csvData) return;
+          const toAdd = csvData.rows.filter(r => r.selected);
+          if (toAdd.length === 0) return;
+
+          setData(prev => ({
+            ...prev,
+            custs: [
+              ...prev.custs,
+              ...toAdd.map(r => ({
+                id: uid("c"),
+                name: r.name,
+                ct: r.ct,
+                em: r.em,
+                ind: r.ind,
+                phone: r.phone,
+                rev: 0,
+                score: 50,
+                st: "prospect",
+                notes: "",
+              })),
+            ],
+          }));
+
+          const count = toAdd.length;
+          setCsvData(null);
+          setCsvError("");
+          alert(count + "件の顧客を登録しました");
+          setView("cust");
+        };
+
+        const toggleRow = (i) => {
+          setCsvData(prev => ({
+            ...prev,
+            rows: prev.rows.map((r, j) => j === i ? { ...r, selected: !r.selected } : r),
+          }));
+        };
+
+        const toggleAll = () => {
+          if (!csvData) return;
+          const allSelected = csvData.rows.every(r => r.selected);
+          setCsvData(prev => ({
+            ...prev,
+            rows: prev.rows.map(r => ({ ...r, selected: !allSelected })),
+          }));
+        };
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Upload area */}
+            <Card>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>CSVファイルから顧客を一括登録</div>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.7 }}>
+                CSVファイルをアップロードして、複数の顧客を一度に登録できます。<br />
+                1行目はヘッダー行として認識されます。「会社名」列は必須です。
+              </div>
+
+              {/* Template download */}
+              <Card style={{ background: "var(--bg-secondary)", padding: 14, marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>CSVテンプレート</div>
+                <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 8 }}>以下の列名を含むCSVをご用意ください:</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {["会社名（必須）", "担当者名", "メールアドレス", "業種", "電話番号"].map(h => (
+                    <span key={h} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 500, background: P + "14", color: P }}>{h}</span>
+                  ))}
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <Btn variant="ghost" size="sm" onClick={() => {
+                    const csv = "会社名,担当者名,メールアドレス,業種,電話番号\nサンプル株式会社,山田太郎,yamada@sample.co.jp,製造業,03-1234-5678\nテスト商事,鈴木花子,suzuki@test.co.jp,IT,06-9876-5432";
+                    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = "顧客テンプレート.csv"; a.click();
+                    URL.revokeObjectURL(url);
+                  }}>テンプレートをダウンロード</Btn>
+                </div>
+              </Card>
+
+              {/* File upload */}
+              <div style={{ border: "2px dashed var(--border-light)", borderRadius: 10, padding: 32, textAlign: "center", cursor: "pointer", transition: "border-color 0.15s" }}
+                onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = P; }}
+                onDragLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; }}
+                onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = "var(--border-light)"; const f = e.dataTransfer.files[0]; if (f) handleFileChange({ target: { files: [f] } }); }}>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>CSVファイルをドラッグ＆ドロップ、またはクリックして選択</div>
+                <input type="file" accept=".csv" onChange={handleFileChange} style={{ display: "none" }} id="csv-upload" />
+                <Btn variant="primary" size="sm" onClick={() => document.getElementById("csv-upload").click()}>ファイルを選択</Btn>
+              </div>
+
+              {csvError && (
+                <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, background: "var(--danger-bg)", color: "#A32D2D", fontSize: 13 }}>{csvError}</div>
+              )}
+            </Card>
+
+            {/* Preview */}
+            {csvData && (
+              <Card>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>プレビュー</div>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>{csvData.rows.filter(r => r.selected).length} / {csvData.rows.length}件 選択中</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Btn size="sm" onClick={toggleAll}>{csvData.rows.every(r => r.selected) ? "全解除" : "全選択"}</Btn>
+                    <Btn size="sm" onClick={() => { setCsvData(null); setCsvError(""); }}>クリア</Btn>
+                  </div>
+                </div>
+                <div style={{ overflowX: "auto", borderRadius: 10, border: "1px solid var(--border-light)" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr>
+                        <th style={{ padding: "10px 12px", textAlign: "center", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)", width: 40 }}>登録</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>会社名</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>担当者</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>メール</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>業種</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>電話</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csvData.rows.map((r, i) => (
+                        <tr key={i} style={{ borderBottom: "1px solid var(--border-light)", opacity: r.selected ? 1 : 0.4 }}>
+                          <td style={{ padding: "8px 12px", textAlign: "center" }}>
+                            <input type="checkbox" checked={r.selected} onChange={() => toggleRow(i)} style={{ accentColor: P }} />
+                          </td>
+                          <td style={{ padding: "8px 12px", fontWeight: 500 }}>{r.name}</td>
+                          <td style={{ padding: "8px 12px" }}>{r.ct || "—"}</td>
+                          <td style={{ padding: "8px 12px", color: P }}>{r.em || "—"}</td>
+                          <td style={{ padding: "8px 12px" }}>{r.ind || "—"}</td>
+                          <td style={{ padding: "8px 12px" }}>{r.phone || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                  <Btn onClick={() => { setCsvData(null); setCsvError(""); }}>キャンセル</Btn>
+                  <Btn variant="primary" onClick={handleBulkRegister} disabled={csvData.rows.filter(r => r.selected).length === 0}>
+                    {csvData.rows.filter(r => r.selected).length}件を一括登録
+                  </Btn>
+                </div>
               </Card>
             )}
           </div>

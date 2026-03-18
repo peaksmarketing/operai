@@ -23,16 +23,11 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // Public routes
-  if (pathname === '/login' || pathname === '/auth/callback') {
+  if (pathname === '/' || pathname === '/login' || pathname === '/auth/callback') {
     if (user && pathname === '/login') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return supabaseResponse;
-  }
-
-  // Root redirect
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL(user ? '/dashboard' : '/login', request.url));
   }
 
   // Protected routes - redirect to login if not authenticated
