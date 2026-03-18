@@ -11,10 +11,10 @@ function FiShield() { return <svg width="20" height="20" viewBox="0 0 24 24" fil
 function FiTrend() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>; }
 
 const features = [
-  { Ic: FiLink, title: "業務フローを自動接続", desc: "受注・請求・仕訳を一気通貫で自動処理" },
-  { Ic: FiLayers, title: "モジュール統合管理", desc: "営業・在庫・会計・人事を一画面で操作" },
-  { Ic: FiTrend, title: "リアルタイム経営分析", desc: "KPIダッシュボードで即座に経営判断" },
-  { Ic: FiShield, title: "中小企業に最適設計", desc: "専任IT不要、直感的な操作で即日運用開始" },
+  { Ic: FiLink, title: "業務フローをAIが自動接続", desc: "受注・請求・仕訳をAIが一気通貫で自動処理" },
+  { Ic: FiLayers, title: "AI統合モジュール管理", desc: "営業・在庫・会計・人事をAIが横断分析" },
+  { Ic: FiTrend, title: "AI経営参謀でリアルタイム分析", desc: "売上予測・異常検知・回収リスクをAIが自動診断" },
+  { Ic: FiShield, title: "中小企業に最適なAI設計", desc: "専任IT不要、AIがデータを自動で統合・最適化" },
 ];
 
 export default function LoginScreen() {
@@ -98,12 +98,13 @@ export default function LoginScreen() {
           </div>
 
           <h1 style={{ fontSize: 30, fontWeight: 700, lineHeight: 1.35, margin: '0 0 16px', letterSpacing: -0.5 }}>
-            経営のすべてを、<br />ひとつの画面から。
+            AIが経営を自動化する、<br />統合業務プラットフォーム。
           </h1>
           <p style={{ fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.65)', margin: '0 0 44px', maxWidth: 340 }}>
             二重入力・転記ミス・Excelの限界。<br />
-            Operaiが業務の分断を解消し、<br />
-            データ連携で経営をリアルタイムに可視化します。
+            OperaiのAIが業務データを統合・分析し、<br />
+            受注から決算まで自動で実行。<br />
+            経営判断をリアルタイムに支援します。
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -178,21 +179,8 @@ export default function LoginScreen() {
             </button>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: '#e5e5e3' }} />
-            <span style={{ fontSize: 12, color: '#bbb' }}>デモ</span>
-            <div style={{ flex: 1, height: 1, background: '#e5e5e3' }} />
-          </div>
-
-          <button onClick={handleDemo} disabled={loading}
-            style={{ width: '100%', padding: '12px 0', border: '1px solid #e0e0de', borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', background: '#fff', color: '#555', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = P; e.currentTarget.style.color = P; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0e0de'; e.currentTarget.style.color = '#555'; }}>
-            デモアカウントで試す →
-          </button>
-
-          <p style={{ fontSize: 11, color: '#ccc', textAlign: 'center', marginTop: 20 }}>
-            デモアカウントはサンプルデータで動作します
+          <p style={{ fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 24, lineHeight: 1.8 }}>
+            ログインすることで、<a href="/terms" style={{ color: '#999', textDecoration: 'underline' }}>利用規約</a>および<a href="https://peaksmarketing.co.jp/privacy/" target="_blank" rel="noopener" style={{ color: '#999', textDecoration: 'underline' }}>プライバシーポリシー</a>に同意したものとみなされます。
           </p>
         </div>
       </div>

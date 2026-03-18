@@ -91,7 +91,7 @@ export default function TopPage() {
             </p>
             <div className={s.topHeroLabel}>すべての業務を効率化！</div>
             <div className={s.topHeroBtns}>
-              <a href="/login" className={s.topBtnPrimary}>無料で始める</a>
+              <a href="/login" className={s.topBtnPrimary}>デモを試す</a>
               <a href="#features" className={s.topBtnOutline}>機能を見る</a>
             </div>
           </div>
@@ -229,8 +229,8 @@ export default function TopPage() {
         <h2>経営のすべてを、<br />AIが自動化</h2>
         <p>まずは無料でOperaiを体験してください</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          <a href="/login" className={s.topCTABtn}>ログイン</a>
-          <a href="/login" className={s.topCTABtn}>無料で始める</a>
+          <a href="/login" className={s.topCTABtn}>デモを試す</a>
+          <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topCTABtnOutline}>お問い合わせ</a>
         </div>
       </section>
 

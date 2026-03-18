@@ -38,3 +38,13 @@ button, input, select, textarea { font-family: var(--font); }
   0%, 100% { opacity: 0.3; transform: scale(0.8); }
   50% { opacity: 1; transform: scale(1.2); }
 }
+
+/* Admin screen mobile responsive */
+@media (max-width: 768px) {
+  body { font-size: 13px; }
+  table { font-size: 12px; }
+  table th, table td { padding: 8px 6px !important; }
+}
+@media (max-width: 480px) {
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}

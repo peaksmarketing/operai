@@ -67,6 +67,7 @@ export default function AppShell({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [col, setCol] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [nOpen, setNOpen] = useState(false);
   const [uMenuOpen, setUMenuOpen] = useState(false);
   const nRef = useRef(null);
@@ -127,8 +128,18 @@ export default function AppShell({ children }) {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
+      {/* Mobile sidebar overlay */}
+      {mobileMenuOpen && <div onClick={() => setMobileMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 999 }} />}
+
       {/* Sidebar */}
-      <div style={{ width: col ? 60 : 220, background: P, display: "flex", flexDirection: "column", transition: "width 0.2s", flexShrink: 0, overflow: "hidden" }}>
+      <div className="app-sidebar" style={{ width: col ? 60 : 220, background: P, display: "flex", flexDirection: "column", transition: "width 0.2s, transform 0.2s", flexShrink: 0, overflow: "hidden", position: "relative", zIndex: 1000 }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .app-sidebar { position: fixed !important; top: 0; bottom: 0; left: 0; transform: translateX(${mobileMenuOpen ? '0' : '-100%'}) !important; width: 220px !important; z-index: 1001 !important; }
+            .app-content { margin-left: 0 !important; }
+            .app-mobile-toggle { display: flex !important; }
+          }
+        `}</style>
         <div style={{ padding: col ? "16px 14px" : "20px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(255,255,255,0.12)", cursor: "pointer" }} onClick={() => setCol(!col)}>
           {col ? (
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -143,7 +154,7 @@ export default function AppShell({ children }) {
             const MIcon = m.Ic;
             const isActive = pathname.startsWith(m.path);
             return (
-              <div key={m.id} onClick={() => router.push(m.path)}
+              <div key={m.id} onClick={() => { router.push(m.path); setMobileMenuOpen(false); }}
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "10px 14px" : "9px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.95)" : "rgba(255,255,255,0.65)", fontWeight: isActive || m.accent ? 600 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = m.accent ? "rgba(83,74,183,0.3)" : "rgba(255,255,255,0.08)"; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent"; }}>
@@ -168,7 +179,12 @@ export default function AppShell({ children }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Header */}
         <div style={{ padding: "12px 24px", background: "var(--bg-primary)", borderBottom: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>{currentPage?.l || ""}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div className="app-mobile-toggle" onClick={() => setMobileMenuOpen(true)} style={{ display: "none", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 6, cursor: "pointer", background: "var(--bg-secondary)" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>{currentPage?.l || ""}</span>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {/* Notifications */}
             <div ref={nRef} style={{ position: "relative" }}>
