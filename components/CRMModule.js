@@ -261,6 +261,7 @@ export default function CRMModule({ data, setData }) {
           <Btn variant={view === "cust" ? "primary" : "default"} size="md" onClick={() => setView("cust")}>顧客一覧</Btn>
           <Btn variant={view === "pipe" ? "primary" : "default"} size="md" onClick={() => setView("pipe")}>パイプライン</Btn>
           <Btn variant={view === "analysis" ? "primary" : "default"} size="md" onClick={() => setView("analysis")}>CRM分析</Btn>
+          <Btn variant={view === "ai" ? "primary" : "default"} size="md" onClick={() => setView("ai")}>AI予測</Btn>
           <Btn variant="primary" size="md" onClick={() => setShowAdd(true)}><IcPlus /> 顧客登録</Btn>
         </div>
       </div>
@@ -446,6 +447,145 @@ export default function CRMModule({ data, setData }) {
                 })}
               </Card>
             </div>
+          </div>
+        );
+      })()}
+
+      {/* AI Prediction View */}
+      {view === "ai" && (() => {
+        const openDeals = data.deals.filter(d => d.stage !== "won" && d.stage !== "lost");
+
+        // AI scoring logic based on multiple factors
+        const predictDeal = (deal) => {
+          const cust = data.custs.find(c => c.id === deal.cid) || {};
+          const custDeals = data.deals.filter(d => d.cid === deal.cid);
+          const wonCount = custDeals.filter(d => d.stage === "won").length;
+          const totalClosed = custDeals.filter(d => d.stage === "won" || d.stage === "lost").length;
+          const custWinRate = totalClosed > 0 ? wonCount / totalClosed : 0.5;
+
+          // Stage weight
+          const stageWeight = { lead: 0.1, qualification: 0.25, proposal: 0.5, negotiation: 0.75 }[deal.stage] || 0.3;
+
+          // Customer score factor (0-1)
+          const scoreFactor = (cust.score || 50) / 100;
+
+          // Revenue history factor
+          const revFactor = cust.rev > 30000000 ? 0.9 : cust.rev > 10000000 ? 0.7 : 0.5;
+
+          // Activity recency factor
+          const activities = (data.activities || []).filter(a => a.cid === deal.cid);
+          const recentActivity = activities.length > 0;
+          const activityFactor = recentActivity ? 0.8 : 0.4;
+
+          // Combined AI score
+          const aiScore = Math.round(
+            (stageWeight * 0.3 + scoreFactor * 0.25 + custWinRate * 0.2 + revFactor * 0.15 + activityFactor * 0.1) * 100
+          );
+
+          // Expected value
+          const expectedVal = Math.round(deal.val * aiScore / 100);
+
+          // Risk level
+          const risk = aiScore >= 65 ? "low" : aiScore >= 40 ? "medium" : "high";
+
+          // Recommended actions
+          const actions = [];
+          if (deal.stage === "qualification") actions.push("詳細なヒアリングで要件を明確化");
+          if (deal.stage === "proposal") actions.push("競合分析を含む提案書を準備");
+          if (deal.stage === "negotiation") actions.push("決裁者との直接面談を設定");
+          if (!recentActivity) actions.push("2週間以上未接触 — 早急にフォローアップ");
+          if (scoreFactor < 0.6) actions.push("関係性の強化が必要 — 定期的な情報提供を");
+          if (aiScore >= 70) actions.push("成約確度が高い — クロージングの準備を");
+          if (deal.val > 5000000 && deal.stage !== "negotiation") actions.push("高額案件 — 上長同席のプレゼンを検討");
+
+          return { ...deal, aiScore, expectedVal, risk, actions, custName: cust.name || "—", custScore: cust.score || 0 };
+        };
+
+        const predictions = openDeals.map(predictDeal).sort((a, b) => b.aiScore - a.aiScore);
+        const totalExpected = predictions.reduce((s, p) => s + p.expectedVal, 0);
+        const totalPipeline = predictions.reduce((s, p) => s + p.val, 0);
+        const avgAiScore = predictions.length > 0 ? Math.round(predictions.reduce((s, p) => s + p.aiScore, 0) / predictions.length) : 0;
+        const highProb = predictions.filter(p => p.aiScore >= 65).length;
+
+        const riskColor = { low: "#0F6E56", medium: "#BA7517", high: "#A32D2D" };
+        const riskLabel = { low: "低リスク", medium: "中リスク", high: "高リスク" };
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* AI Header */}
+            <Card style={{ background: P + "08", border: "1px solid " + P + "20" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: P + "18", display: "flex", alignItems: "center", justifyContent: "center", color: P }}><IcZap /></div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: P }}>AI成約予測エンジン</div>
+                  <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>顧客スコア・案件フェーズ・対応履歴・取引実績から成約確率を算出</div>
+                </div>
+              </div>
+            </Card>
+
+            {/* KPIs */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              <KPI label="予測売上" value={fmtY(totalExpected)} sub={`パイプライン ${fmtY(totalPipeline)} の期待値`} icon={<IcRcpt />} color={P} />
+              <KPI label="平均成約確率" value={avgAiScore + "%"} icon={<IcZap />} color={avgAiScore >= 60 ? "#0F6E56" : "#BA7517"} />
+              <KPI label="高確度案件" value={highProb + "件"} sub={`${predictions.length}件中`} icon={<IcChk />} color="#0F6E56" />
+            </div>
+
+            {/* Deal Predictions */}
+            {predictions.map(p => (
+              <Card key={p.id} style={{ padding: 0, overflow: "hidden" }}>
+                <div style={{ display: "flex" }}>
+                  {/* Left: Score visual */}
+                  <div style={{ width: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 16, background: riskColor[p.risk] + "08", borderRight: "1px solid var(--border-light)" }}>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: riskColor[p.risk], lineHeight: 1 }}>{p.aiScore}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 4 }}>AI予測</div>
+                    <Badge variant={p.risk === "low" ? "success" : p.risk === "medium" ? "warning" : "danger"}>{riskLabel[p.risk]}</Badge>
+                  </div>
+
+                  {/* Right: Details */}
+                  <div style={{ flex: 1, padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 600 }}>{p.title}</div>
+                        <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 2 }}>{p.custName} / <Badge variant="info">{STG[p.stage]}</Badge></div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 16, fontWeight: 700 }}>{fmtY(p.val)}</div>
+                        <div style={{ fontSize: 12, color: P }}>期待値 {fmtY(p.expectedVal)}</div>
+                      </div>
+                    </div>
+
+                    {/* Score breakdown */}
+                    <div style={{ display: "flex", gap: 16, marginBottom: 12, fontSize: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ color: "var(--text-tertiary)" }}>顧客スコア:</span>
+                        <span style={{ fontWeight: 600, color: p.custScore >= 70 ? "#0F6E56" : "#BA7517" }}>{p.custScore}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ color: "var(--text-tertiary)" }}>確度:</span>
+                        <span style={{ fontWeight: 600 }}>{p.prob}%</span>
+                      </div>
+                    </div>
+
+                    {/* AI Recommended Actions */}
+                    <div style={{ background: "var(--bg-secondary)", borderRadius: 8, padding: 12 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: A, marginBottom: 6 }}>AI推奨アクション</div>
+                      {p.actions.map((a, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "var(--text-secondary)", marginBottom: 4 }}>
+                          <span style={{ color: A, flexShrink: 0, marginTop: 1 }}>→</span>
+                          <span>{a}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+
+            {predictions.length === 0 && (
+              <Card style={{ textAlign: "center", padding: 40, color: "var(--text-tertiary)" }}>
+                進行中の案件がありません
+              </Card>
+            )}
           </div>
         );
       })()}
