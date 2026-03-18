@@ -23,12 +23,16 @@
 .mobileClose { position: absolute; top: 20px; right: 24px; font-size: 28px; cursor: pointer; color: #999; border: none; background: none; }
 
 /* Hero */
-.topHero { padding: 160px 24px 80px; text-align: center; background: linear-gradient(180deg, #eef7f5 0%, #fff 100%); position: relative; overflow: hidden; }
+.topHero { padding: 140px 24px 80px; background: linear-gradient(180deg, #eef7f5 0%, #fff 100%); position: relative; overflow: hidden; }
+.topHeroInner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 40px; }
+.topHeroLeft { flex: 1; }
+.topHeroRight { flex: 0 0 440px; }
+.topHeroImg { width: 100%; height: auto; }
 .topHeroLogo { height: 48px; margin-bottom: 32px; }
 .topHeroTitle { font-size: 40px; font-weight: 800; line-height: 1.35; letter-spacing: -1px; margin-bottom: 20px; color: #1a1a1a; }
-.topHeroSub { font-size: 16px; color: #888; max-width: 520px; margin: 0 auto 12px; line-height: 1.9; }
+.topHeroSub { font-size: 16px; color: #888; max-width: 520px; margin: 0 0 12px; line-height: 1.9; }
 .topHeroLabel { display: inline-block; font-size: 13px; font-weight: 600; color: #2b6876; background: #2b687614; padding: 6px 20px; border-radius: 50px; margin-bottom: 36px; }
-.topHeroBtns { display: flex; justify-content: center; gap: 12px; }
+.topHeroBtns { display: flex; gap: 12px; }
 .topHeroBtns a { padding: 14px 36px; border-radius: 50px; font-size: 15px; font-weight: 600; transition: 0.2s; }
 .topBtnPrimary { background: #2b6876; color: #fff; }
 .topBtnPrimary:hover { opacity: 0.85; }
@@ -116,6 +120,9 @@
 @media (max-width: 768px) {
   .topNav { display: none; }
   .topHamburger { display: flex; }
+  .topHeroInner { flex-direction: column; text-align: center; }
+  .topHeroRight { flex: none; width: 100%; max-width: 360px; }
+  .topHeroBtns { justify-content: center; }
   .topHeroTitle { font-size: 26px; }
   .topHeroSub { font-size: 14px; }
   .topHeroLogo { height: 32px; }

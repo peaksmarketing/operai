@@ -79,18 +79,25 @@ export default function TopPage() {
 
       {/* Hero */}
       <section className={s.topHero}>
-        <img src="/logo.svg" alt="Operai" className={s.topHeroLogo} />
-        <h1 className={s.topHeroTitle}>経営のすべてを、<br />AIが自動化</h1>
-        <p className={s.topHeroSub}>
-          入力だけじゃ終わらない。<br />
-          Operaiは、AIが業務データを統合・分析し、<br />
-          受注から決算までを自動で実行。<br />
-          次のアクションを迷わない、経営の自動運転ツールです。
-        </p>
-        <div className={s.topHeroLabel}>すべての業務を効率化！</div>
-        <div className={s.topHeroBtns}>
-          <a href="/login" className={s.topBtnPrimary}>無料で始める</a>
-          <a href="#features" className={s.topBtnOutline}>機能を見る</a>
+        <div className={s.topHeroInner}>
+          <div className={s.topHeroLeft}>
+            <img src="/logo.svg" alt="Operai" className={s.topHeroLogo} />
+            <h1 className={s.topHeroTitle}>経営のすべてを、<br />AIが自動化</h1>
+            <p className={s.topHeroSub}>
+              入力だけじゃ終わらない。<br />
+              Operaiは、AIが業務データを統合・分析し、<br />
+              受注から決算までを自動で実行。<br />
+              次のアクションを迷わない、経営の自動運転ツールです。
+            </p>
+            <div className={s.topHeroLabel}>すべての業務を効率化！</div>
+            <div className={s.topHeroBtns}>
+              <a href="/login" className={s.topBtnPrimary}>無料で始める</a>
+              <a href="#features" className={s.topBtnOutline}>機能を見る</a>
+            </div>
+          </div>
+          <div className={s.topHeroRight}>
+            <img src="/img/fv_img.png" alt="Operai" className={s.topHeroImg} />
+          </div>
         </div>
       </section>
 
@@ -168,13 +175,12 @@ export default function TopPage() {
           <div className={s.topSectionTitle}><h2>料金</h2></div>
           <div className={s.topSectionSub}>まずは使って実感してほしいから、<br />料金はシンプルかつ明瞭に。<br />導入しやすい価格で、経営の<br />効率化と自動化を実現できます。</div>
           <div className={s.topPriceCard}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 12 }}>スタンダードプラン</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 16 }}>標準販売価格（税抜・サブスクリプション）</div>
             <div>
-              <span className={s.topPriceUnit}>月払い </span>
-              <span className={s.topPriceAmount}>50,000</span>
-              <span className={s.topPriceUnit}>円(税別)</span>
+              <span className={s.topPriceAmount}>270</span>
+              <span className={s.topPriceUnit}>万円 / 年</span>
             </div>
-            <div className={s.topPriceAnnual}>ー1年間利用料：600,000円(税別)</div>
+            <div className={s.topPriceAnnual}>2年分申請時：540万円</div>
             <div className={s.topPriceNote}>※初期費用はかかりません。</div>
             <ul className={s.topPriceFeatures}>
               {["全モジュール利用可能", "ユーザー数無制限", "AI成約予測・経営分析", "自動仕訳・請求書生成", "データ連携自動化", "メールサポート"].map(f => (
