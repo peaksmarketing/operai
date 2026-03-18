@@ -25,7 +25,7 @@ const faqs = [
   { q: "導入にどのくらい時間がかかりますか？", a: "アカウント作成後、即日からご利用いただけます。既存データのCSV取込にも対応しているため、スムーズに移行できます。" },
   { q: "ITの専門知識は必要ですか？", a: "必要ありません。Operaiは直感的な操作を前提に設計されており、Excelを使える方であれば問題なくお使いいただけます。" },
   { q: "データのセキュリティは大丈夫ですか？", a: "すべてのデータはSSL/TLS暗号化で保護されています。認証基盤にはSupabaseを採用し、エンタープライズレベルのセキュリティを実現しています。" },
-  { q: "他のシステムとの連携は可能ですか？", a: "Stripe決済連携に対応しています。今後、会計ソフトやCRMとのAPI連携も順次対応予定です。" },
+  { q: "他のシステムとの連携は可能ですか？", a: "CSV取込による顧客データの一括登録に対応しています。今後、会計ソフトやCRMとのAPI連携も順次対応予定です。" },
   { q: "無料トライアルはありますか？", a: "はい。デモアカウントで全機能をお試しいただけます。ログイン画面から「デモアカウントで試す」をクリックしてください。" },
   { q: "解約はいつでもできますか？", a: "はい、いつでも解約可能です。解約手数料はかかりません。月末までのご利用となります。" },
 ];
@@ -162,7 +162,7 @@ export default function TopPage() {
           <div className={s.topSectionTitle}><h2>見やすく、使いやすく。<br />運用のすべてをこの画面で</h2></div>
           <div className={s.topSectionSub}>直感的なUIで、専任ITがいなくても即日運用可能</div>
           <div className={s.topScreenshotsGrid}>
-            {["ダッシュボード", "営業・顧客管理", "在庫・物流", "会計・財務", "請求・決済", "データ連携"].map((label, i) => (
+            {["ダッシュボード", "AI経営参謀", "営業・顧客管理", "在庫・物流", "会計・財務", "請求・入金管理"].map((label, i) => (
               <div key={i} className={s.topScreenshotItem}>{label}</div>
             ))}
           </div>
@@ -180,7 +180,6 @@ export default function TopPage() {
               <span className={s.topPriceAmount}>270</span>
               <span className={s.topPriceUnit}>万円 / 年</span>
             </div>
-            <div className={s.topPriceAnnual}>2年分申請時：540万円</div>
             <div className={s.topPriceNote}>※初期費用はかかりません。</div>
             <ul className={s.topPriceFeatures}>
               {["全モジュール利用可能", "ユーザー数無制限", "AI成約予測・経営分析", "自動仕訳・請求書生成", "データ連携自動化", "メールサポート"].map(f => (

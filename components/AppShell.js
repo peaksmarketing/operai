@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../lib/supabase-browser';
-import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX } from './Icons';
+import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi } from './Icons';
 import { DATA } from './data';
 import { useAuto } from './useAuto';
 
@@ -37,6 +37,7 @@ function AutoToast({ items, onDismiss }) {
 
 const MENU_COMPANY = [
   { id: "dashboard", path: "/dashboard", l: "ダッシュボード", Ic: IcDash },
+  { id: "ai", path: "/ai", l: "AI経営参謀", Ic: IcAi, accent: true },
   { id: "crm", path: "/crm", l: "営業・顧客管理", Ic: IcUsers },
   { id: "inventory", path: "/inventory", l: "在庫・物流", Ic: IcBox },
   { id: "accounting", path: "/accounting", l: "会計・財務", Ic: IcCalc },
@@ -143,9 +144,9 @@ export default function AppShell({ children }) {
             const isActive = pathname.startsWith(m.path);
             return (
               <div key={m.id} onClick={() => router.push(m.path)}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "10px 14px" : "9px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : "transparent", color: isActive ? "#fff" : "rgba(255,255,255,0.65)", fontWeight: isActive ? 600 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : "transparent"; }}>
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "10px 14px" : "9px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.95)" : "rgba(255,255,255,0.65)", fontWeight: isActive || m.accent ? 600 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = m.accent ? "rgba(83,74,183,0.3)" : "rgba(255,255,255,0.08)"; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent"; }}>
                 <span style={{ flexShrink: 0, display: "flex" }}><MIcon /></span>
                 {!col && <span>{m.l}</span>}
               </div>

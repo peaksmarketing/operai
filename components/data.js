@@ -1,10 +1,10 @@
 export const DATA = {
-  company: { name: "デモ株式会社" },
+  company: { name: "デモ株式会社", plan: "pro", created: "2024-01-15" },
   emps: [
-    { id: "e1", name: "田中 太郎", dept: "営業部", role: "営業部長", sal: 450000, pl: 15, ul: 3 },
-    { id: "e2", name: "佐藤 花子", dept: "経理部", role: "経理主任", sal: 380000, pl: 18, ul: 5 },
-    { id: "e3", name: "鈴木 一郎", dept: "営業部", role: "営業担当", sal: 320000, pl: 12, ul: 2 },
-    { id: "e4", name: "山田 美咲", dept: "物流部", role: "倉庫管理", sal: 300000, pl: 10, ul: 1 },
+    { id: "e1", name: "田中 太郎", dept: "営業部", role: "営業部長", sal: 450000, pl: 15, ul: 3, hired: "2022-04-01", email: "tanaka@demo.co.jp", status: "active" },
+    { id: "e2", name: "佐藤 花子", dept: "経理部", role: "経理主任", sal: 380000, pl: 18, ul: 5, hired: "2021-06-15", email: "sato@demo.co.jp", status: "active" },
+    { id: "e3", name: "鈴木 一郎", dept: "営業部", role: "営業担当", sal: 320000, pl: 12, ul: 2, hired: "2023-01-10", email: "suzuki@demo.co.jp", status: "active" },
+    { id: "e4", name: "山田 美咲", dept: "物流部", role: "倉庫管理", sal: 300000, pl: 10, ul: 1, hired: "2023-07-01", email: "yamada@demo.co.jp", status: "active" },
   ],
   custs: [
     { id: "c1", name: "ABC商事", ct: "山本健一", em: "y@abc.co.jp", ind: "製造業", rev: 50000000, score: 85, st: "active" },

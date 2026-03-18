@@ -216,6 +216,37 @@ export default function Dashboard({ data, role }) {
         </Card>
       </div>
 
+      {/* AI Insights */}
+      <Card style={{ borderLeft: "3px solid " + A, background: A + "04" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: A + "18", display: "flex", alignItems: "center", justifyContent: "center", color: A }}>
+              <IcZap />
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: A }}>AI経営参謀のインサイト</div>
+              <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>全モジュールのデータをAIが分析</div>
+            </div>
+          </div>
+          <Badge variant="purple">AI分析</Badge>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          {[
+            { icon: "📊", title: "売上トレンド", desc: "直近3ヶ月で上昇傾向。来月の予測売上は前月比+8%", color: "#0F6E56" },
+            { icon: "⚠️", title: "在庫アラート", desc: lowStock.length > 0 ? `${lowStock.length}商品が発注点以下。AI推奨: 即時発注` : "在庫は適正水準です", color: lowStock.length > 0 ? "#BA7517" : "#0F6E56" },
+            { icon: "💰", title: "回収リスク", desc: invTotal - pR > 0 ? `未回収${fmtY(invTotal - pR)}。高リスク案件の早期フォローを推奨` : "全額回収済み", color: invTotal - pR > 0 ? "#BA7517" : "#0F6E56" },
+          ].map((item, i) => (
+            <div key={i} style={{ padding: "12px 14px", borderRadius: 10, background: "var(--bg-primary)", border: "1px solid var(--border-light)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <span style={{ fontSize: 14 }}>{item.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: item.color }}>{item.title}</span>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Recent Orders */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
