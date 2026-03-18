@@ -1,210 +1,249 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import s from './top.module.css';
 
 const P = "#2b6876";
-const A = "#534AB7";
 
-function Header() {
-  const [open, setOpen] = useState(false);
+/* SVG Icons for features */
+function SvgAutomate() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>; }
+function SvgDashboard() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>; }
+function SvgAI() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>; }
+function SvgInventory() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8l-9-5-9 5v8l9 5 9-5z"/><path d="M3.3 7L12 12l8.7-5"/><line x1="12" y1="22" x2="12" y2="12"/></svg>; }
+function SvgBilling() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>; }
+function SvgHR() { return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>; }
+
+const features = [
+  { Icon: SvgAutomate, title: "受注から決算まで\n自動でつなぐ", desc: "受注確定→請求書生成→売上仕訳→在庫引当。一つのボタンで4つの処理が同時に走り、転記ミスをゼロにします。" },
+  { Icon: SvgDashboard, title: "リアルタイム\n経営ダッシュボード", desc: "売上・キャッシュフロー・在庫・パイプラインの状況をひと目で把握。データに基づく迅速な経営判断を支援します。" },
+  { Icon: SvgAI, title: "AI成約予測で\n営業を最適化", desc: "顧客スコア・対応履歴・フェーズを分析し、案件ごとの成約確率と推奨アクションをAIが自動提示します。" },
+  { Icon: SvgInventory, title: "在庫・物流を\nリアルタイム管理", desc: "受注と連動した自動引当・出庫処理。低在庫アラートで欠品を防止し、適正在庫を維持します。" },
+  { Icon: SvgBilling, title: "請求・入金の\n自動消込", desc: "入金登録と同時に売掛金消込仕訳を自動生成。回収状況をリアルタイムで把握できます。" },
+  { Icon: SvgHR, title: "人事・給与も\nワンクリック", desc: "給与計算から仕訳生成まで自動化。社会保険・所得税の計算も含め、経理の負担を大幅に削減します。" },
+];
+
+const faqs = [
+  { q: "導入にどのくらい時間がかかりますか？", a: "アカウント作成後、即日からご利用いただけます。既存データのCSV取込にも対応しているため、スムーズに移行できます。" },
+  { q: "ITの専門知識は必要ですか？", a: "必要ありません。Operaiは直感的な操作を前提に設計されており、Excelを使える方であれば問題なくお使いいただけます。" },
+  { q: "データのセキュリティは大丈夫ですか？", a: "すべてのデータはSSL/TLS暗号化で保護されています。認証基盤にはSupabaseを採用し、エンタープライズレベルのセキュリティを実現しています。" },
+  { q: "他のシステムとの連携は可能ですか？", a: "Stripe決済連携に対応しています。今後、会計ソフトやCRMとのAPI連携も順次対応予定です。" },
+  { q: "無料トライアルはありますか？", a: "はい。デモアカウントで全機能をお試しいただけます。ログイン画面から「デモアカウントで試す」をクリックしてください。" },
+  { q: "解約はいつでもできますか？", a: "はい、いつでも解約可能です。解約手数料はかかりません。月末までのご利用となります。" },
+];
+
+const reviews = [
+  { name: "株式会社A 様", text: "Excel管理から脱却したくてOperaiを導入しました。受注から請求書・仕訳が自動生成されるので、経理の二重入力がゼロに。月次決算が3日で終わるようになり、経営判断のスピードが格段に上がりました。" },
+  { name: "B商事 様", text: "以前は営業・在庫・経理がバラバラのシステムで、数字の突き合わせに毎月丸一日かかっていました。Operai導入後はすべてが一画面で見えるので、在庫切れや入金漏れにすぐ気づけるようになりました。" },
+];
+
+export default function TopPage() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState(null);
+
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+
   return (
-    <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo.svg" alt="Operai" style={{ height: 22 }} />
-        <nav style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          {[["#about", "Operaiとは"], ["#features", "機能"], ["#price", "料金"], ["#faq", "よくある質問"]].map(([href, label]) => (
-            <a key={href} href={href} style={{ fontSize: 14, color: "#555", textDecoration: "none", fontWeight: 500 }}>{label}</a>
-          ))}
-          <a href="/login" style={{ fontSize: 14, color: P, fontWeight: 600, textDecoration: "none" }}>ログイン</a>
-          <a href="/login" style={{ fontSize: 14, color: "#fff", background: P, padding: "8px 20px", borderRadius: 8, textDecoration: "none", fontWeight: 600 }}>無料で始める</a>
-        </nav>
+    <div className={s.top}>
+      {/* Header */}
+      <header className={`${s.topHeader} ${scrolled ? s.scrolled : ''}`}>
+        <div className={s.topHeaderInner}>
+          <a href="/"><img src="/logo.svg" alt="Operai" style={{ height: 22 }} /></a>
+          <nav className={s.topNav}>
+            <a href="#about">Operaiとは</a>
+            <a href="#features">機能</a>
+            <a href="#price">料金</a>
+            <a href="#faq">よくある質問</a>
+            <a href="/login" className={s.topNavLogin}>ログイン</a>
+            <a href="/login" className={s.topNavCTA}>無料で始める</a>
+          </nav>
+          <button className={s.topHamburger} onClick={() => setMobileOpen(true)}>
+            <span /><span /><span />
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      <div className={`${s.mobileMenu} ${mobileOpen ? s.open : ''}`}>
+        <button className={s.mobileClose} onClick={() => setMobileOpen(false)}>×</button>
+        <a href="#about" onClick={() => setMobileOpen(false)}>Operaiとは</a>
+        <a href="#features" onClick={() => setMobileOpen(false)}>機能</a>
+        <a href="#price" onClick={() => setMobileOpen(false)}>料金</a>
+        <a href="#faq" onClick={() => setMobileOpen(false)}>よくある質問</a>
+        <a href="/login" style={{ color: P, fontWeight: 700 }}>ログイン</a>
+        <a href="/login" style={{ background: P, color: '#fff', padding: '12px 36px', borderRadius: 50 }}>無料で始める</a>
       </div>
-    </header>
-  );
-}
 
-function Hero() {
-  return (
-    <section style={{ paddingTop: 140, paddingBottom: 80, textAlign: "center", background: "linear-gradient(180deg, #f0f8f7 0%, #fff 100%)" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px" }}>
-        <img src="/logo.svg" alt="Operai" style={{ height: 40, marginBottom: 32 }} />
-        <h1 style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.3, margin: "0 0 20px", color: "#1a1a1a", letterSpacing: -1 }}>
-          経営のすべてを、<br />ひとつの画面から。
-        </h1>
-        <p style={{ fontSize: 17, lineHeight: 1.8, color: "#777", margin: "0 0 36px", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-          営業・在庫・会計・人事——バラバラだった業務データを統合。<br />
-          AIが自動でつなぎ、リアルタイムに経営を可視化します。
+      {/* Hero */}
+      <section className={s.topHero}>
+        <img src="/logo.svg" alt="Operai" className={s.topHeroLogo} />
+        <h1 className={s.topHeroTitle}>経営のすべてを、<br />AIが自動化</h1>
+        <p className={s.topHeroSub}>
+          入力だけじゃ終わらない。<br />
+          Operaiは、AIが業務データを統合・分析し、<br />
+          受注から決算までを自動で実行。<br />
+          次のアクションを迷わない、経営の自動運転ツールです。
         </p>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <a href="/login" style={{ fontSize: 16, color: "#fff", background: P, padding: "14px 36px", borderRadius: 10, textDecoration: "none", fontWeight: 600, transition: "opacity 0.15s" }}>無料で始める</a>
-          <a href="#features" style={{ fontSize: 16, color: P, background: "#fff", padding: "14px 36px", borderRadius: 10, textDecoration: "none", fontWeight: 600, border: "1px solid " + P }}>機能を見る</a>
+        <div className={s.topHeroLabel}>すべての業務を効率化！</div>
+        <div className={s.topHeroBtns}>
+          <a href="/login" className={s.topBtnPrimary}>無料で始める</a>
+          <a href="#features" className={s.topBtnOutline}>機能を見る</a>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function About() {
-  return (
-    <section id="about" style={{ padding: "80px 24px", maxWidth: 1100, margin: "0 auto" }}>
-      <h2 style={{ fontSize: 28, fontWeight: 700, textAlign: "center", margin: "0 0 16px", color: "#1a1a1a" }}>Operaiとは？</h2>
-      <div style={{ maxWidth: 760, margin: "0 auto", fontSize: 15, lineHeight: 2, color: "#666", textAlign: "center" }}>
-        <p>中小企業の経営では「Excelでの二重入力」「部門間のデータ断絶」「転記ミスによる数値のズレ」が日常的に発生しています。</p>
-        <p style={{ marginTop: 16 }}>Operaiは、営業・在庫・会計・人事・請求といったすべての業務モジュールを一つのプラットフォームに統合。受注が入れば請求書・仕訳・在庫引当をAIが自動生成し、手作業ゼロで経営データがリアルタイムに更新されます。</p>
-        <p style={{ marginTop: 16 }}>「入力する」から「確認するだけ」へ。Operaiが、中小企業の経営を次のステージに引き上げます。</p>
-      </div>
-    </section>
-  );
-}
-
-function Features() {
-  const items = [
-    { icon: "🔗", title: "受注から決算まで、自動でつなぐ", desc: "受注確定→請求書生成→売上仕訳→在庫引当。一つのボタンで4つの処理が同時に走り、転記ミスをゼロにします。" },
-    { icon: "📊", title: "リアルタイム経営ダッシュボード", desc: "売上・キャッシュフロー・在庫・パイプラインの状況をひと目で把握。データに基づく迅速な経営判断を支援します。" },
-    { icon: "🤖", title: "AI成約予測で営業を最適化", desc: "顧客スコア・対応履歴・フェーズを分析し、案件ごとの成約確率と推奨アクションをAIが自動提示します。" },
-    { icon: "📦", title: "在庫・物流をリアルタイム管理", desc: "受注と連動した自動引当・出庫処理。低在庫アラートで欠品を防止し、適正在庫を維持します。" },
-    { icon: "💰", title: "請求・入金の自動消込", desc: "入金登録と同時に売掛金消込仕訳を自動生成。回収状況をリアルタイムで把握できます。" },
-    { icon: "👥", title: "人事・給与もワンクリック", desc: "給与計算から仕訳生成まで自動化。社会保険・所得税の計算も含め、経理の負担を大幅に削減します。" },
-  ];
-  return (
-    <section id="features" style={{ padding: "80px 24px", background: "#f9f9f8" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, textAlign: "center", margin: "0 0 8px", color: "#1a1a1a" }}>Operai導入で実現できること</h2>
-        <p style={{ fontSize: 15, color: "#999", textAlign: "center", margin: "0 0 48px" }}>すべてのモジュールが連携し、業務を自動化</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-          {items.map((item, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: 14, padding: 32, border: "1px solid #eee", transition: "box-shadow 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.06)"; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; }}>
-              <div style={{ fontSize: 32, marginBottom: 16 }}>{item.icon}</div>
-              <h3 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 10px", color: "#1a1a1a" }}>{item.title}</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.8, color: "#888", margin: 0 }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Screenshots() {
-  return (
-    <section style={{ padding: "80px 24px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 8px", color: "#1a1a1a" }}>見やすく、使いやすく。<br />運用のすべてをこの画面で</h2>
-        <p style={{ fontSize: 15, color: "#999", margin: "0 0 48px" }}>直感的なUIで、専任ITがいなくても即日運用可能</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          {[
-            { title: "経営ダッシュボード", desc: "KPI・売上推移・パイプラインを一画面で" },
-            { title: "営業・顧客管理", desc: "AIスコアリング付き顧客360°ビュー" },
-            { title: "在庫・物流管理", desc: "リアルタイム在庫と自動引当" },
-            { title: "会計・財務", desc: "自動仕訳・P/L・B/Sをワンクリックで" },
-          ].map((s, i) => (
-            <div key={i} style={{ background: "#f5f5f4", borderRadius: 14, padding: 32, textAlign: "left" }}>
-              <div style={{ width: "100%", height: 200, background: "linear-gradient(135deg, " + P + "12, " + A + "12)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                <span style={{ fontSize: 14, color: "#999" }}>画面イメージ</span>
-              </div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px", color: "#1a1a1a" }}>{s.title}</h3>
-              <p style={{ fontSize: 13, color: "#999", margin: 0 }}>{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Pricing() {
-  return (
-    <section id="price" style={{ padding: "80px 24px", background: "#f9f9f8" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 8px", color: "#1a1a1a" }}>料金</h2>
-        <p style={{ fontSize: 15, color: "#999", margin: "0 0 40px" }}>まずは使って実感してほしいから、<br />料金はシンプルかつ明瞭に。</p>
-        <div style={{ background: "#fff", borderRadius: 16, padding: "48px 40px", border: "2px solid " + P + "30", maxWidth: 480, margin: "0 auto" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 8 }}>スタンダードプラン</div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4, marginBottom: 8 }}>
-            <span style={{ fontSize: 14, color: "#999" }}>月額</span>
-            <span style={{ fontSize: 48, fontWeight: 800, color: "#1a1a1a", letterSpacing: -2 }}>50,000</span>
-            <span style={{ fontSize: 16, color: "#999" }}>円（税別）</span>
+      {/* About */}
+      <section id="about" className={s.topAbout}>
+        <div className={s.topAboutImg}>
+          <div className={s.topAboutImgPlaceholder}>
+            <span style={{ fontSize: 14, color: '#bbb' }}>イメージ画像</span>
           </div>
-          <div style={{ fontSize: 14, color: "#999", marginBottom: 24 }}>年間利用料：600,000円（税別）</div>
-          <div style={{ fontSize: 13, color: "#bbb", marginBottom: 24 }}>※ 初期費用はかかりません</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", marginBottom: 28 }}>
-            {["全モジュール利用可能", "ユーザー数無制限", "AI成約予測・経営分析", "自動仕訳・請求書生成", "データ連携自動化", "メールサポート"].map(f => (
-              <div key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#555" }}>
-                <span style={{ color: P, fontWeight: 700 }}>✓</span>
-                {f}
+        </div>
+        <div className={s.topAboutText}>
+          <h2>Operaiとは？</h2>
+          <p>
+            中小企業の経営では「Excelでの二重入力」「部門間のデータ断絶」「転記ミスによる数値のズレ」が日常的に発生しています。
+          </p>
+          <p style={{ marginTop: 12 }}>
+            『Operai』は、これらの悩みを解決するAI業務プラットフォームです。営業・在庫・会計・人事のデータを自動で統合・連携し、受注から決算までの業務フローを自動化。面倒な入力や転記の手間を減らし、経営判断までをスムーズにつなげます。
+          </p>
+          <p style={{ marginTop: 12 }}>
+            「入力する・確認する・判断する」をワンストップで支援する、新しい経営プラットフォームです。
+          </p>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className={s.topFeatures}>
+        <div className={s.topFeaturesInner}>
+          <div className={s.topSectionTitle}><h2>Operai導入で実現できること</h2></div>
+          <div className={s.topSectionSub}>Operaiが実現する、<br />次世代型AI経営プラットフォーム</div>
+          <div className={s.topFeaturesGrid}>
+            <div className={s.topFeatureRow1}>
+              {features.slice(0, 2).map((f, i) => {
+                const FIcon = f.Icon;
+                return (
+                  <div key={i} className={s.topFeatureCard}>
+                    <div className={s.topFeatureIcon}><FIcon /></div>
+                    <h3 style={{ whiteSpace: 'pre-line' }}>{f.title}</h3>
+                    <p>{f.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={s.topFeatureRow2}>
+              {features.slice(2).map((f, i) => {
+                const FIcon = f.Icon;
+                return (
+                  <div key={i} className={s.topFeatureCard}>
+                    <div className={s.topFeatureIcon}><FIcon /></div>
+                    <h3 style={{ whiteSpace: 'pre-line' }}>{f.title}</h3>
+                    <p>{f.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Screenshots */}
+      <section className={s.topScreenshots}>
+        <div className={s.topScreenshotsInner}>
+          <div className={s.topSectionTitle}><h2>見やすく、使いやすく。<br />運用のすべてをこの画面で</h2></div>
+          <div className={s.topSectionSub}>直感的なUIで、専任ITがいなくても即日運用可能</div>
+          <div className={s.topScreenshotsGrid}>
+            {["ダッシュボード", "営業・顧客管理", "在庫・物流", "会計・財務", "請求・決済", "データ連携"].map((label, i) => (
+              <div key={i} className={s.topScreenshotItem}>{label}</div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="price" className={s.topPricing}>
+        <div className={s.topPricingInner}>
+          <div className={s.topSectionTitle}><h2>料金</h2></div>
+          <div className={s.topSectionSub}>まずは使って実感してほしいから、<br />料金はシンプルかつ明瞭に。<br />導入しやすい価格で、経営の<br />効率化と自動化を実現できます。</div>
+          <div className={s.topPriceCard}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 12 }}>スタンダードプラン</div>
+            <div>
+              <span className={s.topPriceUnit}>月払い </span>
+              <span className={s.topPriceAmount}>50,000</span>
+              <span className={s.topPriceUnit}>円(税別)</span>
+            </div>
+            <div className={s.topPriceAnnual}>ー1年間利用料：600,000円(税別)</div>
+            <div className={s.topPriceNote}>※初期費用はかかりません。</div>
+            <ul className={s.topPriceFeatures}>
+              {["全モジュール利用可能", "ユーザー数無制限", "AI成約予測・経営分析", "自動仕訳・請求書生成", "データ連携自動化", "メールサポート"].map(f => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+            <a href="/login" className={s.topPriceCTA}>無料で始める</a>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className={s.topReviews}>
+        <div className={s.topReviewsInner}>
+          <div className={s.topSectionTitle}><h2>導入企業の口コミ</h2></div>
+          <div className={s.topSectionSub} />
+          <div className={s.topReviewsGrid}>
+            {reviews.map((r, i) => (
+              <div key={i} className={s.topReviewCard}>
+                <h3>{r.name}</h3>
+                <p>{r.text}</p>
               </div>
             ))}
           </div>
-          <a href="/login" style={{ display: "block", fontSize: 16, color: "#fff", background: P, padding: "14px 0", borderRadius: 10, textDecoration: "none", fontWeight: 600, textAlign: "center" }}>無料で始める</a>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function FAQ() {
-  const [openIdx, setOpenIdx] = useState(null);
-  const items = [
-    { q: "導入にどのくらい時間がかかりますか？", a: "アカウント作成後、即日からご利用いただけます。既存データのCSV取込にも対応しているため、スムーズに移行できます。" },
-    { q: "ITの専門知識は必要ですか？", a: "必要ありません。Operaiは直感的な操作を前提に設計されており、Excelを使える方であれば問題なくお使いいただけます。" },
-    { q: "データのセキュリティは大丈夫ですか？", a: "すべてのデータはSSL/TLS暗号化で保護されています。認証基盤にはSupabaseを採用し、エンタープライズレベルのセキュリティを実現しています。" },
-    { q: "他のシステムとの連携は可能ですか？", a: "Stripe決済連携に対応しています。今後、会計ソフトやCRMとのAPI連携も順次対応予定です。" },
-    { q: "無料トライアルはありますか？", a: "はい。デモアカウントで全機能をお試しいただけます。ログイン画面から「デモアカウントで試す」をクリックしてください。" },
-    { q: "解約はいつでもできますか？", a: "はい、いつでも解約可能です。解約手数料はかかりません。月末までのご利用となります。" },
-  ];
-  return (
-    <section id="faq" style={{ padding: "80px 24px" }}>
-      <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, textAlign: "center", margin: "0 0 40px", color: "#1a1a1a" }}>よくある質問</h2>
-        {items.map((item, i) => (
-          <div key={i} style={{ borderBottom: "1px solid #eee" }}>
-            <div onClick={() => setOpenIdx(openIdx === i ? null : i)}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 0", cursor: "pointer" }}>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "#1a1a1a" }}>{item.q}</span>
-              <span style={{ fontSize: 20, color: "#ccc", transform: openIdx === i ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</span>
+      {/* FAQ */}
+      <section id="faq" className={s.topFAQ}>
+        <div className={s.topFAQInner}>
+          <div className={s.topSectionTitle}><h2>よくある質問</h2></div>
+          <div className={s.topSectionSub} />
+          {faqs.map((item, i) => (
+            <div key={i} className={s.topFAQItem}>
+              <div className={s.topFAQQ} onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
+                <h3>{item.q}</h3>
+                <span className={`${s.topFAQToggle} ${faqOpen === i ? s.open : ''}`}>+</span>
+              </div>
+              {faqOpen === i && <div className={s.topFAQA}>{item.a}</div>}
             </div>
-            {openIdx === i && (
-              <div style={{ padding: "0 0 20px", fontSize: 14, lineHeight: 1.8, color: "#888" }}>{item.a}</div>
-            )}
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className={s.topCTA}>
+        <h2>経営のすべてを、<br />AIが自動化</h2>
+        <p>まずは無料でOperaiを体験してください</p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <a href="/login" className={s.topCTABtn}>ログイン</a>
+          <a href="/login" className={s.topCTABtn}>無料で始める</a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className={s.topFooter}>
+        <div className={s.topFooterInner}>
+          <div>
+            <img src="/logo.svg" alt="Operai" style={{ height: 16, filter: 'brightness(0) invert(1)', opacity: 0.5, marginBottom: 8, display: 'block' }} />
+            <div className={s.topFooterCopy}>© Peaks Marketing Co. Ltd. All Rights Reserved.</div>
           </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function CTA() {
-  return (
-    <section style={{ padding: "80px 24px", background: `linear-gradient(135deg, ${P}, #1a3d47)`, textAlign: "center" }}>
-      <h2 style={{ fontSize: 28, fontWeight: 700, color: "#fff", margin: "0 0 12px" }}>経営のすべてを、<br />ひとつの画面から。</h2>
-      <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 32px" }}>まずは無料でOperaiを体験してください</p>
-      <a href="/login" style={{ display: "inline-block", fontSize: 16, color: P, background: "#fff", padding: "14px 40px", borderRadius: 10, textDecoration: "none", fontWeight: 700 }}>無料で始める</a>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer style={{ padding: "40px 24px", background: "#1a1a1a", color: "rgba(255,255,255,0.5)", textAlign: "center" }}>
-      <img src="/logo.svg" alt="Operai" style={{ height: 18, filter: "brightness(0) invert(1)", opacity: 0.5, marginBottom: 16 }} />
-      <div style={{ fontSize: 12 }}>&copy; {new Date().getFullYear()} Peaks Marketing Co., Ltd. All rights reserved.</div>
-    </footer>
-  );
-}
-
-export default function TopPage() {
-  return (
-    <div style={{ fontFamily: "'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a1a1a" }}>
-      <Header />
-      <Hero />
-      <About />
-      <Features />
-      <Screenshots />
-      <Pricing />
-      <FAQ />
-      <CTA />
-      <Footer />
+          <div className={s.topFooterLinks}>
+            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener">会社概要</a>
+            <a href="https://peaksmarketing.co.jp/tokushoho/" target="_blank" rel="noopener">特定商取引法</a>
+            <a href="https://peaksmarketing.co.jp/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+            <a href="https://peaksmarketing.co.jp/security-policy/" target="_blank" rel="noopener">情報セキュリティポリシー</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
