@@ -34,7 +34,7 @@
 .topHeroLabel { display: inline-block; font-size: 13px; font-weight: 600; color: #2b6876; background: #2b687614; padding: 6px 20px; border-radius: 50px; margin-bottom: 36px; }
 .topHeroBtns { display: flex; gap: 12px; }
 .topHeroBtns a { padding: 14px 36px; border-radius: 50px; font-size: 15px; font-weight: 600; transition: 0.2s; }
-.topBtnPrimary { background: #2b6876; color: #fff; }
+.topBtnPrimary { background: #2b6876; color: #fff !important; }
 .topBtnPrimary:hover { opacity: 0.85; }
 .topBtnOutline { background: #fff; color: #2b6876; border: 2px solid #2b6876; }
 .topBtnOutline:hover { background: #2b687608; }
@@ -80,7 +80,7 @@
 .topPriceFeatures { text-align: left; margin-bottom: 28px; }
 .topPriceFeatures li { list-style: none; font-size: 14px; color: #666; padding: 8px 0; display: flex; align-items: center; gap: 10px; }
 .topPriceFeatures li::before { content: "✓"; color: #2b6876; font-weight: 700; }
-.topPriceCTA { display: block; background: #2b6876; color: #fff; padding: 16px 0; border-radius: 50px; font-size: 16px; font-weight: 600; transition: opacity 0.2s; }
+.topPriceCTA { display: block; background: #2b6876; color: #fff !important; padding: 16px 0; border-radius: 50px; font-size: 16px; font-weight: 600; transition: opacity 0.2s; }
 .topPriceCTA:hover { opacity: 0.85; }
 
 /* Reviews */

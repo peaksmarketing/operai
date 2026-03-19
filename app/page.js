@@ -51,7 +51,7 @@ export default function TopPage() {
       {/* Header */}
       <header className={`${s.topHeader} ${scrolled ? s.scrolled : ''}`}>
         <div className={s.topHeaderInner}>
-          <a href="/"><img src="/logo.svg" alt="Operai" style={{ height: 22 }} /></a>
+          <a href="/"><img src="/logo.svg" alt="Operai" style={{ height: 28 }} /></a>
           <nav className={s.topNav}>
             <a href="#about">Operaiとは</a>
             <a href="#features">機能</a>
@@ -91,7 +91,7 @@ export default function TopPage() {
             </p>
             <div className={s.topHeroLabel}>すべての業務を効率化！</div>
             <div className={s.topHeroBtns}>
-              <a href="/login" className={s.topBtnPrimary}>デモを試す</a>
+              <a href="/login" className={s.topBtnPrimary}>ログイン</a>
               <a href="#features" className={s.topBtnOutline}>機能を見る</a>
             </div>
           </div>
