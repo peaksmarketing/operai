@@ -16,6 +16,11 @@ export function InvView({ data, setData, confirmOrder }) {
   const [search, setSearch] = useState("");
   const [selProd, setSelProd] = useState(null);
   const [selOrd, setSelOrd] = useState(null);
+  const [poList, setPoList] = useState([
+    { id: "PO-001", supplier: "テクノパーツ株式会社", date: "2025-03-15", eta: "2025-03-28", amount: 750000, st: "draft", items: [{ name: "高性能センサー A100", qty: 5, price: 150000 }] },
+    { id: "PO-002", supplier: "グローバル電子部品", date: "2025-03-12", eta: "2025-03-20", amount: 360000, st: "received", items: [{ name: "IoTゲートウェイ G500", qty: 3, price: 120000 }] },
+    { id: "PO-003", supplier: "テクノパーツ株式会社", date: "2025-03-10", eta: "2025-03-22", amount: 1200000, st: "ordered", items: [{ name: "産業用ロボットアーム RA-200", qty: 2, price: 600000 }] },
+  ]);
   const newTotal = newItems.reduce((s, it) => { const p = data.prods.find(x => x.id === it.pid); return s + (p ? p.price * it.qty : 0); }, 0);
 
   const filteredProds = data.prods.filter(p => {
@@ -178,24 +183,23 @@ export function InvView({ data, setData, confirmOrder }) {
       {/* Alert View */}
       {/* Procurement / 仕入・調達 */}
       {v === "proc" && (() => {
-        const poData = [
-          { id: "PO-001", supplier: "テクノパーツ株式会社", date: "2025-03-15", eta: "2025-03-28", amount: 750000, st: "draft", items: [{ name: "高性能センサー A100", qty: 5, price: 150000 }] },
-          { id: "PO-002", supplier: "グローバル電子部品", date: "2025-03-12", eta: "2025-03-20", amount: 360000, st: "received", items: [{ name: "IoTゲートウェイ G500", qty: 3, price: 120000 }] },
-          { id: "PO-003", supplier: "テクノパーツ株式会社", date: "2025-03-10", eta: "2025-03-22", amount: 1200000, st: "ordered", items: [{ name: "産業用ロボットアーム RA-200", qty: 2, price: 600000 }] },
-        ];
         const stLabel = { draft: "下書き", ordered: "発注済", received: "入荷済", confirmed: "確認済" };
         const stVar = { draft: "default", ordered: "info", received: "success", confirmed: "success" };
         const lowStk = data.prods.filter(p => p.stk <= p.min);
+        const addPO = (prod) => {
+          const qty = prod.min * 2 - prod.stk;
+          const newPO = { id: "PO-" + String(poList.length + 1).padStart(3, "0"), supplier: "自動発注", date: today(), eta: (() => { const d = new Date(); d.setDate(d.getDate() + 14); return d.toISOString().slice(0, 10); })(), amount: prod.cost * qty, st: "ordered", items: [{ name: prod.name, qty, price: prod.cost }] };
+          setPoList(prev => [newPO, ...prev]);
+        };
         return (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
-              <KPI label="今月の発注" value={poData.length + "件"} icon={<IcBox />} color={P} />
-              <KPI label="発注総額" value={fmtY(poData.reduce((s, p) => s + p.amount, 0))} icon={<IcRcpt />} color={A} />
-              <KPI label="入荷待ち" value={poData.filter(p => p.st === "ordered").length + "件"} icon={<IcClk />} color="#BA7517" />
-              <KPI label="入荷済" value={poData.filter(p => p.st === "received").length + "件"} icon={<IcChk />} color="#0F6E56" />
+              <KPI label="今月の発注" value={poList.length + "件"} icon={<IcBox />} color={P} />
+              <KPI label="発注総額" value={fmtY(poList.reduce((s, p) => s + p.amount, 0))} icon={<IcRcpt />} color={A} />
+              <KPI label="入荷待ち" value={poList.filter(p => p.st === "ordered").length + "件"} icon={<IcClk />} color="#BA7517" />
+              <KPI label="入荷済" value={poList.filter(p => p.st === "received").length + "件"} icon={<IcChk />} color="#0F6E56" />
             </div>
 
-            {/* AI recommended orders */}
             {lowStk.length > 0 && (
               <Card style={{ borderLeft: "3px solid " + A, background: A + "04" }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: A, display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}><IcZap /> AI推奨発注</div>
@@ -206,7 +210,7 @@ export function InvView({ data, setData, confirmOrder }) {
                       <span style={{ fontWeight: 500 }}>{p.name}</span>
                       <span style={{ color: "var(--text-tertiary)", marginLeft: 8, fontSize: 12 }}>残{p.stk}個 → 推奨{p.min * 2}個</span>
                     </div>
-                    <Btn variant="primary" size="sm"><IcPlus /> 発注書作成</Btn>
+                    <Btn variant="primary" size="sm" onClick={() => addPO(p)}><IcPlus /> 発注書作成</Btn>
                   </div>
                 ))}
               </Card>
@@ -222,8 +226,8 @@ export function InvView({ data, setData, confirmOrder }) {
               }},
               { label: "金額", render: r => <span style={{ fontWeight: 600 }}>{fmtY(r.amount)}</span> },
               { label: "ステータス", render: r => <Badge variant={stVar[r.st]}>{stLabel[r.st]}</Badge> },
-              { label: "操作", render: r => <span style={{ fontSize: 12, cursor: "pointer", color: A }}>⋯</span> },
-            ]} data={poData} />
+              { label: "操作", render: r => r.st === "ordered" ? <Btn size="sm" onClick={() => setPoList(prev => prev.map(po => po.id === r.id ? { ...po, st: "received" } : po))}>入荷確認</Btn> : <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>—</span> },
+            ]} data={poList} />
           </>
         );
       })()}
@@ -353,9 +357,13 @@ export function InvView({ data, setData, confirmOrder }) {
   );
 }
 
-export function AcctView({ data }) {
+export function AcctView({ data, setData }) {
   const [v, setV] = useState("jnl");
   const [showNew, setShowNew] = useState(false);
+  const [showAcctAdd, setShowAcctAdd] = useState(false);
+  const [newAcctName, setNewAcctName] = useState("");
+  const [newAcctCat, setNewAcctCat] = useState("費用");
+  const [customAccts, setCustomAccts] = useState([]);
   const [newJrnl, setNewJrnl] = useState({ date: today(), desc: "", drAcc: "消耗品費", drAmt: "", crAcc: "現金", crAmt: "" });
 
   const tS = data.jrnl.filter(j => j.cr.acc === "売上高").reduce((s, j) => s + j.cr.amt, 0);
@@ -463,7 +471,7 @@ export function AcctView({ data }) {
               <h3 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 4px" }}>勘定科目マスタ</h3>
               <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{accounts.length}科目登録済み</div>
             </div>
-            <Btn variant="primary" size="sm"><IcPlus /> 科目追加</Btn>
+            <Btn variant="primary" size="sm" onClick={() => setShowAcctAdd(true)}><IcPlus /> 科目追加</Btn>
           </div>
           {(() => {
             const cats = { "資産": ["現金", "普通預金", "売掛金", "棚卸資産", "固定資産"], "負債": ["買掛金", "未払金"], "純資産": ["資本金", "利益剰余金"], "収益": ["売上高"], "費用": ["売上原価", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "雑費"] };
@@ -490,7 +498,35 @@ export function AcctView({ data }) {
             <div style={{ fontSize: 12, color: A, fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}><IcZap /> AIカテゴリ提案</div>
             <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>新しい取引を入力すると、AIが最適な勘定科目を自動推奨します</div>
           </Card>
+          {customAccts.length > 0 && (
+            <div style={{ marginTop: 12, borderTop: "1px solid var(--border-light)", paddingTop: 12 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 6 }}>追加済みの勘定科目</div>
+              {customAccts.map((a, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 12px", fontSize: 13, borderBottom: "1px solid var(--border-light)" }}>
+                  <span>{a.name}</span><Badge variant="default">{a.cat}</Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
+      )}
+
+      {showAcctAdd && (
+        <Modal title="勘定科目を追加" onClose={() => setShowAcctAdd(false)}>
+          <Fld label="科目名"><input value={newAcctName} onChange={e => setNewAcctName(e.target.value)} placeholder="例: 広告宣伝費" style={inputStyle} /></Fld>
+          <Fld label="区分">
+            <select value={newAcctCat} onChange={e => setNewAcctCat(e.target.value)} style={inputStyle}>
+              {["資産", "負債", "純資産", "収益", "費用"].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Fld>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <Btn onClick={() => setShowAcctAdd(false)}>キャンセル</Btn>
+            <Btn variant="primary" disabled={!newAcctName} onClick={() => {
+              setCustomAccts(prev => [...prev, { name: newAcctName, cat: newAcctCat }]);
+              setNewAcctName(""); setNewAcctCat("費用"); setShowAcctAdd(false);
+            }}>追加</Btn>
+          </div>
+        </Modal>
       )}
 
       {/* P/L */}
@@ -611,7 +647,15 @@ export function AcctView({ data }) {
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
             <Btn onClick={() => setShowNew(false)}>キャンセル</Btn>
-            <Btn variant="primary" disabled={!newJrnl.desc || !newJrnl.drAmt} onClick={() => { /* In real app: setData to add journal entry */ setShowNew(false); }}>仕訳を登録</Btn>
+            <Btn variant="primary" disabled={!newJrnl.desc || !newJrnl.drAmt} onClick={() => {
+              if (setData) {
+                const amt = Number(newJrnl.drAmt);
+                const crAmt = Number(newJrnl.crAmt) || amt;
+                setData(p => ({ ...p, jrnl: [...p.jrnl, { id: uid("j"), date: newJrnl.date, desc: newJrnl.desc, dr: { acc: newJrnl.drAcc, amt }, cr: { acc: newJrnl.crAcc, amt: crAmt }, auto: false }] }));
+              }
+              setShowNew(false);
+              setNewJrnl({ date: today(), desc: "", drAcc: "消耗品費", drAmt: "", crAcc: "現金", crAmt: "" });
+            }}>仕訳を登録</Btn>
           </div>
         </Modal>
       )}
@@ -623,6 +667,7 @@ export function HRView({ data, role, confirmPayroll }) {
   const [v, setV] = useState("emp");
   const [clk, setClk] = useState(false);
   const [pd, setPd] = useState(false);
+  const [bonusDone, setBonusDone] = useState(false);
   const [selEmp, setSelEmp] = useState(null);
 
   const totalSal = data.emps.reduce((s, e) => s + e.sal, 0);
@@ -883,8 +928,9 @@ export function HRView({ data, role, confirmPayroll }) {
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
             <Btn onClick={() => { const lines = data.emps.map(e => [e.name.replace(/ /g,""),e.dept,Math.round(e.sal*2*0.75)].join(",")); const blob = new Blob(["氏名,部署,振込額\n"+lines.join("\n")], {type:"text/csv"}); const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=u; a.download="zengin_fb_bonus.csv"; a.click(); URL.revokeObjectURL(u); }}>全銀FBデータ出力</Btn>
-            <Btn variant="success"><IcZap /> 賞与確定 → 仕訳自動生成</Btn>
+            <Btn variant="success" onClick={() => setBonusDone(true)} disabled={bonusDone}><IcZap /> 賞与確定 → 仕訳自動生成</Btn>
           </div>
+          {bonusDone && <div style={{ marginTop: 12, padding: 10, background: "var(--success-bg)", borderRadius: 8, fontSize: 12, color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}><IcChk /> 賞与仕訳（賞与手当/普通預金）・社会保険仕訳（法定福利費/未払金）を自動生成しました</div>}
         </Card>
       )}
 
@@ -1375,8 +1421,44 @@ export function AutoLogView({ data }) {
   );
 }
 
+function Toggle({ on, onToggle }) {
+  return (
+    <div onClick={onToggle} style={{ width: 40, height: 22, borderRadius: 11, background: on ? "#0F6E56" : "var(--border)", cursor: "pointer", position: "relative", transition: "0.2s" }}>
+      <div style={{ width: 18, height: 18, borderRadius: 9, background: "#fff", position: "absolute", top: 2, left: on ? 20 : 2, transition: "0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+    </div>
+  );
+}
+
+function NotifySettings() {
+  const [items, setItems] = useState([
+    { id: "stock", l: "低在庫アラート", desc: "在庫が発注点を下回った場合に通知", on: true },
+    { id: "overdue", l: "入金期限超過通知", desc: "支払期限を超過した請求書がある場合に通知", on: true },
+    { id: "payroll", l: "給与計算リマインダー", desc: "給与支給日の5日前にリマインド", on: true },
+    { id: "order", l: "新規受注通知", desc: "受注が確定された際に通知", on: true },
+    { id: "ai", l: "AI経営インサイト", desc: "AIが重要な経営変化を検知した際に通知", on: true },
+    { id: "daily", l: "日次連携レポート", desc: "毎日の自動連携結果をメールで配信", on: false },
+    { id: "weekly", l: "週次経営サマリー", desc: "週次の経営サマリーをメールで配信", on: false },
+  ]);
+  const toggle = (id) => setItems(prev => prev.map(r => r.id === id ? { ...r, on: !r.on } : r));
+  return (
+    <Card>
+      <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>通知設定</h3>
+      {items.map(r => (
+        <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border-light)" }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500 }}>{r.l}</div>
+            <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{r.desc}</div>
+          </div>
+          <Toggle on={r.on} onToggle={() => toggle(r.id)} />
+        </div>
+      ))}
+    </Card>
+  );
+}
+
 export function SettView({ data }) {
   const [v, setV] = useState("company");
+  const [saved, setSaved] = useState(false);
   const autoRules = [
     { name: "受注確定 → 請求書自動生成", mod: "請求", enabled: true },
     { name: "請求書発行 → 売上仕訳", mod: "会計", enabled: true },
@@ -1406,7 +1488,7 @@ export function SettView({ data }) {
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>会社基本情報</h3>
-              <Btn variant="primary" size="sm">保存</Btn>
+              <Btn variant="primary" size="sm" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}>{saved ? "✓ 保存しました" : "保存"}</Btn>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <Fld label="会社名"><input defaultValue={data.company.name} style={inputStyle} /></Fld>
@@ -1486,28 +1568,7 @@ export function SettView({ data }) {
       )}
 
       {/* Notification Settings */}
-      {v === "notify" && (
-        <Card>
-          <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>通知設定</h3>
-          {[
-            { l: "低在庫アラート", desc: "在庫が発注点を下回った場合に通知", on: true },
-            { l: "入金期限超過通知", desc: "支払期限を超過した請求書がある場合に通知", on: true },
-            { l: "給与計算リマインダー", desc: "給与支給日の5日前にリマインド", on: true },
-            { l: "新規受注通知", desc: "受注が確定された際に通知", on: true },
-            { l: "AI経営インサイト", desc: "AIが重要な経営変化を検知した際に通知", on: true },
-            { l: "日次連携レポート", desc: "毎日の自動連携結果をメールで配信", on: false },
-            { l: "週次経営サマリー", desc: "週次の経営サマリーをメールで配信", on: false },
-          ].map(r => (
-            <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border-light)" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{r.l}</div>
-                <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{r.desc}</div>
-              </div>
-              <Badge variant={r.on ? "success" : "default"}>{r.on ? "有効" : "無効"}</Badge>
-            </div>
-          ))}
-        </Card>
-      )}
+      {v === "notify" && <NotifySettings />}
 
       {/* Auto Rules */}
       {v === "auto" && (

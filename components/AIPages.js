@@ -117,6 +117,7 @@ export function AIOCRPage() {
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const handleProcess = () => {
     if (!file) return;
@@ -149,8 +150,8 @@ export function AIOCRPage() {
         {/* Upload */}
         <Card>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>画像アップロード</div>
-          <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>JPG, PNG, WEBP対応（16MBまで）</div>
-          <input type="file" accept="image/*" id="ocr-file" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) { setFile({ name: e.target.files[0].name, size: (e.target.files[0].size / 1024 / 1024).toFixed(1) + "MB" }); setResult(null); } }} />
+          <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>JPG, PNG, WEBP, PDF対応（16MBまで）</div>
+          <input type="file" accept="image/*,.pdf" id="ocr-file" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) { setFile({ name: e.target.files[0].name, size: (e.target.files[0].size / 1024 / 1024).toFixed(1) + "MB" }); setResult(null); } }} />
           <div style={{ border: "2px dashed var(--border)", borderRadius: 12, padding: 48, textAlign: "center", cursor: "pointer", transition: "0.2s", background: file ? P + "06" : "transparent" }}
             onClick={() => document.getElementById("ocr-file").click()}>
             {file ? (
@@ -185,7 +186,7 @@ export function AIOCRPage() {
               <div style={{ borderTop: "2px solid var(--border-light)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 15 }}>
                 <span>合計</span><span style={{ color: P }}>{fmtY(result.total)}</span>
               </div>
-              <Btn variant="success" style={{ width: "100%", marginTop: 8 }}><IcChk /> 請求書として登録</Btn>
+              <Btn variant={registered ? "default" : "success"} style={{ width: "100%", marginTop: 8 }} onClick={() => setRegistered(true)} disabled={registered}>{registered ? <><IcChk /> 登録済み</> : <><IcChk /> 請求書として登録</>}</Btn>
             </div>
           ) : (
             <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
@@ -275,7 +276,7 @@ export function AIMailPage() {
               <div style={{ padding: 16, background: "var(--bg-secondary)", borderRadius: 10, fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", minHeight: 300 }}>{result}</div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <Btn variant="primary" style={{ flex: 1 }} onClick={() => navigator.clipboard?.writeText(result)}>コピー</Btn>
-                <Btn style={{ flex: 1 }}>再生成</Btn>
+                <Btn style={{ flex: 1 }} onClick={() => { setResult(null); generate(); }}>再生成</Btn>
               </div>
             </div>
           ) : (
@@ -296,39 +297,59 @@ export function AIMailPage() {
    ======================================== */
 export function AIMinutesPage() {
   const [title, setTitle] = useState("");
-  const [file, setFile] = useState(null);
+  const [rawText, setRawText] = useState("");
   const [result, setResult] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [tab, setTab] = useState("new");
 
   const pastRecords = [
-    { id: 1, title: "第3回営業戦略会議", date: "2025-03-10", duration: "45分" },
-    { id: 2, title: "Q1レビューミーティング", date: "2025-03-05", duration: "60分" },
+    { id: 1, title: "第3回営業戦略会議", date: "2025-03-10", participants: "田中, 佐藤, 鈴木" },
+    { id: 2, title: "Q1レビューミーティング", date: "2025-03-05", participants: "全員" },
   ];
 
   const handleGenerate = () => {
-    if (!title) return;
+    if (!title || !rawText) return;
     setProcessing(true);
     setTimeout(() => {
+      // Parse raw text to extract key info
+      const lines = rawText.split("\n").filter(l => l.trim());
+      const keywords = { decide: [], action: [], discuss: [] };
+      lines.forEach(l => {
+        const lower = l.toLowerCase();
+        if (lower.includes("決定") || lower.includes("承認") || lower.includes("合意") || lower.includes("決まり")) keywords.decide.push(l.trim());
+        else if (lower.includes("担当") || lower.includes("までに") || lower.includes("対応") || lower.includes("作成") || lower.includes("確認")) keywords.action.push(l.trim());
+        else keywords.discuss.push(l.trim());
+      });
+
+      // Generate structured output
+      const summary = lines.length > 3
+        ? lines.slice(0, 3).join("。") + "。以上の内容について議論しました。"
+        : rawText.slice(0, 200) + "...について議論しました。";
+
+      const decisions = keywords.decide.length > 0
+        ? keywords.decide.slice(0, 5)
+        : ["議論した内容に基づき、次回会議までに方針を確定する"];
+
+      const actions = keywords.action.length > 0
+        ? keywords.action.slice(0, 5).map((a, i) => ({ person: ["田中", "佐藤", "鈴木", "山田", "担当者"][i % 5], task: a, due: "次回会議まで" }))
+        : [{ person: "担当者", task: "議事録の内容を確認し、次のアクションを決定", due: "次回会議まで" }];
+
       setResult({
-        title: title || "会議",
-        date: today(),
-        summary: "本会議では、Q1の営業実績の振り返りと、Q2に向けた戦略の方向性について議論しました。売上目標の達成率は87%で、主にパイプラインの案件クロージングの遅延が影響しています。",
-        decisions: ["Q2の売上目標を前期比+15%に設定", "新規顧客開拓のための展示会出展を承認", "CRMデータの精度向上プロジェクトを開始"],
-        actions: [
-          { person: "田中", task: "展示会のブース設計案を作成", due: "3/25" },
-          { person: "佐藤", task: "Q1の経費精算レポートを完成", due: "3/20" },
-          { person: "鈴木", task: "上位5社の訪問スケジュール調整", due: "3/22" },
-        ],
+        title,
+        date: new Date().toISOString().slice(0, 10),
+        summary,
+        decisions,
+        actions,
+        original: rawText,
       });
       setProcessing(false);
-    }, 2500);
+    }, 1500);
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div><h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px" }}>AI議事録</h2>
-        <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>会議の音声ファイルをアップロードすると、AIが文字起こし・要約・アクションアイテム抽出を自動で行います</p></div>
+        <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>会議メモを入力すると、AIが要約・決定事項・アクションアイテムに自動整形します</p></div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 0 }}>
         <Btn variant={tab === "new" ? "primary" : "default"} size="md" onClick={() => setTab("new")}>新規作成</Btn>
@@ -337,42 +358,62 @@ export function AIMinutesPage() {
 
       {tab === "new" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Card>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>音声ファイル</div>
-            <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>MP3, WAV, M4A対応（16MBまで）</div>
-            <Fld label="会議タイトル"><input value={title} onChange={e => setTitle(e.target.value)} placeholder="例: 第3回営業戦略会議" style={inputStyle} /></Fld>
-            <input type="file" accept="audio/*" id="minutes-file" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) setFile({ name: e.target.files[0].name }); }} />
-            <div style={{ border: "2px dashed var(--border)", borderRadius: 12, padding: 40, textAlign: "center", cursor: "pointer", marginTop: 12 }}
-              onClick={() => document.getElementById("minutes-file").click()}>
-              {file ? <div style={{ fontSize: 13, fontWeight: 500, color: P }}>{file.name}</div> : (
-                <div><div style={{ marginBottom: 8, opacity: 0.4, color: "var(--text-tertiary)" }}><IcAi /></div><div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>音声ファイルをクリックして選択</div></div>
-              )}
-            </div>
-            <Btn variant="primary" size="lg" style={{ width: "100%", marginTop: 16 }} onClick={handleGenerate} disabled={!title || processing}>
-              <IcZap /> {processing ? "AI解析中..." : "議事録を作成"}
-            </Btn>
-          </Card>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Card>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>会議情報</div>
+              <Fld label="会議タイトル"><input value={title} onChange={e => setTitle(e.target.value)} placeholder="例: 第3回営業戦略会議" style={inputStyle} /></Fld>
+              <Fld label="会議メモ・議論内容">
+                <textarea value={rawText} onChange={e => setRawText(e.target.value)}
+                  placeholder={"会議の内容をそのまま入力してください。\n\n例:\n・Q1の売上目標達成率は87%だった\n・パイプライン案件のクロージング遅延が課題\n・Q2の売上目標を前期比+15%に決定\n・展示会出展を承認、田中がブース設計を3/25までに作成\n・鈴木が上位5社の訪問スケジュールを調整"}
+                  style={{ ...inputStyle, minHeight: 220, resize: "vertical", lineHeight: 1.8 }} />
+              </Fld>
+              <Btn variant="primary" size="lg" style={{ width: "100%", marginTop: 8 }} onClick={handleGenerate} disabled={!title || !rawText || processing}>
+                <IcZap /> {processing ? "AI整形中..." : "議事録を生成"}
+              </Btn>
+            </Card>
+          </div>
           <Card>
             {result ? (
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{result.title}</div>
-                <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>{result.date}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>要約</div>
-                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 16 }}>{result.summary}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>決定事項</div>
-                {result.decisions.map((d, i) => <div key={i} style={{ fontSize: 12, padding: "4px 0", display: "flex", gap: 6 }}><span style={{ color: "#0F6E56" }}>✓</span>{d}</div>)}
-                <div style={{ fontSize: 13, fontWeight: 600, margin: "16px 0 6px" }}>アクションアイテム</div>
-                {result.actions.map((a, i) => (
-                  <div key={i} style={{ fontSize: 12, padding: "6px 0", borderBottom: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between" }}>
-                    <span><span style={{ fontWeight: 500 }}>{a.person}</span>: {a.task}</span>
-                    <span style={{ color: "var(--text-tertiary)" }}>期限: {a.due}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{result.title}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{result.date}</div>
+                  </div>
+                  <Badge variant="purple">AI生成</Badge>
+                </div>
+
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: P }}>要約</div>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 16, padding: 12, background: "var(--bg-secondary)", borderRadius: 8 }}>{result.summary}</div>
+
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: "#0F6E56" }}>決定事項</div>
+                {result.decisions.map((d, i) => (
+                  <div key={i} style={{ fontSize: 12, padding: "6px 0", display: "flex", gap: 6, borderBottom: "1px solid var(--border-light)" }}>
+                    <span style={{ color: "#0F6E56", flexShrink: 0 }}><IcChk /></span><span>{d}</span>
                   </div>
                 ))}
+
+                <div style={{ fontSize: 13, fontWeight: 600, margin: "16px 0 6px", color: A }}>アクションアイテム</div>
+                {result.actions.map((a, i) => (
+                  <div key={i} style={{ fontSize: 12, padding: "8px 0", borderBottom: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between" }}>
+                    <span><span style={{ fontWeight: 600, color: A }}>{a.person}</span>: {a.task}</span>
+                    <span style={{ color: "var(--text-tertiary)", flexShrink: 0, marginLeft: 8 }}>{a.due}</span>
+                  </div>
+                ))}
+
+                <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+                  <Btn variant="primary" style={{ flex: 1 }} onClick={() => {
+                    const text = `【${result.title}】${result.date}\n\n■ 要約\n${result.summary}\n\n■ 決定事項\n${result.decisions.map(d => "・" + d).join("\n")}\n\n■ アクションアイテム\n${result.actions.map(a => "・" + a.person + ": " + a.task + " (" + a.due + ")").join("\n")}`;
+                    navigator.clipboard?.writeText(text);
+                  }}>コピー</Btn>
+                  <Btn style={{ flex: 1 }} onClick={() => { setResult(null); }}>再生成</Btn>
+                </div>
               </div>
             ) : (
               <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
                 <div style={{ marginBottom: 8, opacity: 0.4 }}><IcFlow /></div>
-                <div style={{ fontSize: 13 }}>音声ファイルをアップロードして議事録を作成</div>
+                <div style={{ fontSize: 13 }}>会議メモを入力してAI整形を実行</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>要約・決定事項・アクションアイテムに自動整形されます</div>
               </div>
             )}
           </Card>
@@ -384,8 +425,8 @@ export function AIMinutesPage() {
           <Tbl cols={[
             { label: "タイトル", render: r => <span style={{ fontWeight: 500 }}>{r.title}</span> },
             { label: "日付", key: "date" },
-            { label: "所要時間", key: "duration" },
-            { label: "操作", render: () => <Btn size="sm">表示</Btn> },
+            { label: "参加者", key: "participants" },
+            { label: "操作", render: r => <Btn size="sm" onClick={() => { setTab("new"); setTitle(r.title); setRawText("（過去の議事録データ）\n" + r.title + "の内容がここに表示されます。"); }}>表示</Btn> },
           ]} data={pastRecords} />
         </Card>
       )}

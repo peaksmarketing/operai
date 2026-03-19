@@ -12,30 +12,57 @@ const STGC = { lead: "#888", qualification: "#854F0B", proposal: P, negotiation:
 const ORDS = { pending: "未確認", confirmed: "確定", shipped: "出荷済" };
 
 function MiniChart({ data, color, labels }) {
+  const [hover, setHover] = useState(null);
   const max = Math.max(...data);
+  const min = Math.min(...data);
+  const w = 600, h = 140, px = 40, py = 10;
+  const cw = w - px * 2, ch = h - py * 2 - 20;
+  const pts = data.map((v, i) => ({ x: px + (i / (data.length - 1)) * cw, y: py + ch - ((v - min) / (max - min || 1)) * ch, v }));
+  const line = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x + "," + p.y).join(" ");
+  const area = line + ` L${pts[pts.length - 1].x},${py + ch} L${pts[0].x},${py + ch} Z`;
+
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 100 }}>
-      {data.map((v, i) => (
-        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-          <div style={{ width: "100%", borderRadius: "4px 4px 0 0", height: max ? Math.max(4, (v / max) * 80) : 4, background: color || P, opacity: 0.15 + (v / max) * 0.85, transition: "height 0.4s ease" }} />
-          <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{labels ? labels[i] : ""}</span>
-        </div>
+    <svg viewBox={`0 0 ${w} ${h + 10}`} style={{ width: "100%", height: "auto" }}>
+      {/* Grid lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
+        const y = py + ch * (1 - r);
+        const val = Math.round(min + (max - min) * r);
+        return <g key={i}><line x1={px} y1={y} x2={w - px} y2={y} stroke="var(--border-light)" strokeWidth="0.5" /><text x={px - 6} y={y + 3} textAnchor="end" style={{ fontSize: 9, fill: "var(--text-tertiary)" }}>{val > 999 ? (val / 10000).toFixed(0) + "万" : val}</text></g>;
+      })}
+      {/* Area fill */}
+      <path d={area} fill={color} opacity="0.08" />
+      {/* Line */}
+      <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Data points + labels */}
+      {pts.map((p, i) => (
+        <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
+          <circle cx={p.x} cy={p.y} r={hover === i ? 5 : 3} fill={color} stroke="#fff" strokeWidth="2" style={{ transition: "r 0.15s" }} />
+          {hover === i && (
+            <g>
+              <rect x={p.x - 28} y={p.y - 24} width="56" height="18" rx="4" fill={color} />
+              <text x={p.x} y={p.y - 12} textAnchor="middle" style={{ fontSize: 10, fill: "#fff", fontWeight: 600 }}>{fmtY(p.v * 10000)}</text>
+            </g>
+          )}
+          <text x={p.x} y={h + 6} textAnchor="middle" style={{ fontSize: 9, fill: hover === i ? color : "var(--text-tertiary)", fontWeight: hover === i ? 600 : 400 }}>{labels ? labels[i] : ""}</text>
+        </g>
       ))}
-    </div>
+    </svg>
   );
 }
 
 function RingChart({ value, max, color, label }) {
+  const [animPct, setAnimPct] = useState(0);
   const pct = max ? Math.round((value / max) * 100) : 0;
-  const r = 36, circ = 2 * Math.PI * r, offset = circ - (circ * pct) / 100;
+  useState(() => { setTimeout(() => setAnimPct(pct), 100); });
+  const r = 40, circ = 2 * Math.PI * r, offset = circ - (circ * animPct) / 100;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <svg width="88" height="88" viewBox="0 0 88 88">
-        <circle cx="44" cy="44" r={r} fill="none" stroke="var(--border-light)" strokeWidth="8" />
-        <circle cx="44" cy="44" r={r} fill="none" stroke={color || P} strokeWidth="8" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 44 44)" style={{ transition: "stroke-dashoffset 0.6s ease" }} />
-        <text x="44" y="44" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 18, fontWeight: 700, fill: "var(--text-primary)" }}>{pct}%</text>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--border-light)" strokeWidth="8" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke={color || P} strokeWidth="8" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition: "stroke-dashoffset 1s ease-out" }} />
+        <text x="50" y="46" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 22, fontWeight: 700, fill: "var(--text-primary)" }}>{pct}%</text>
+        <text x="50" y="62" textAnchor="middle" style={{ fontSize: 10, fill: "var(--text-tertiary)" }}>{label}</text>
       </svg>
-      <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>{label}</span>
     </div>
   );
 }
