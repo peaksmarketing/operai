@@ -18,6 +18,9 @@ export const DATA = {
     { id: "d3", cid: "c3", title: "年間保守契約", val: 8000000, stage: "won", prob: 100 },
     { id: "d4", cid: "c4", title: "品質管理システム", val: 3500000, stage: "qualification", prob: 40 },
     { id: "d5", cid: "c1", title: "IoTセンサー追加", val: 4500000, stage: "proposal", prob: 60 },
+    { id: "d6", cid: "c2", title: "セキュリティ監査", val: 2000000, stage: "lead", prob: 20 },
+    { id: "d7", cid: "c3", title: "データ基盤構築", val: 15000000, stage: "processing", prob: 95 },
+    { id: "d8", cid: "c4", title: "社内研修パッケージ", val: 1500000, stage: "lead", prob: 15 },
   ],
   prods: [
     { id: "p1", name: "コントローラ A100", sku: "AC-A100", cat: "制御", price: 150000, cost: 85000, stk: 45, min: 10, wh: "東京" },

@@ -49,6 +49,7 @@ export function InvView({ data, setData, confirmOrder }) {
         <div style={{ display: "flex", gap: 8 }}>
           <Btn variant={v === "prod" ? "primary" : "default"} size="md" onClick={() => setV("prod")}>商品マスタ</Btn>
           <Btn variant={v === "ord" ? "primary" : "default"} size="md" onClick={() => setV("ord")}>受注管理</Btn>
+          <Btn variant={v === "proc" ? "primary" : "default"} size="md" onClick={() => setV("proc")}>仕入・調達</Btn>
           <Btn variant={v === "wh" ? "primary" : "default"} size="md" onClick={() => setV("wh")}>倉庫別</Btn>
           <Btn variant={v === "alert" ? "primary" : "default"} size="md" onClick={() => setV("alert")}>アラート{alertCount > 0 ? ` (${alertCount})` : ""}</Btn>
           <Btn variant="primary" size="md" onClick={() => setShowNew(true)}><IcPlus /> 新規受注</Btn>
@@ -175,6 +176,58 @@ export function InvView({ data, setData, confirmOrder }) {
       )}
 
       {/* Alert View */}
+      {/* Procurement / 仕入・調達 */}
+      {v === "proc" && (() => {
+        const poData = [
+          { id: "PO-001", supplier: "テクノパーツ株式会社", date: "2025-03-15", eta: "2025-03-28", amount: 750000, st: "draft", items: [{ name: "高性能センサー A100", qty: 5, price: 150000 }] },
+          { id: "PO-002", supplier: "グローバル電子部品", date: "2025-03-12", eta: "2025-03-20", amount: 360000, st: "received", items: [{ name: "IoTゲートウェイ G500", qty: 3, price: 120000 }] },
+          { id: "PO-003", supplier: "テクノパーツ株式会社", date: "2025-03-10", eta: "2025-03-22", amount: 1200000, st: "ordered", items: [{ name: "産業用ロボットアーム RA-200", qty: 2, price: 600000 }] },
+        ];
+        const stLabel = { draft: "下書き", ordered: "発注済", received: "入荷済", confirmed: "確認済" };
+        const stVar = { draft: "default", ordered: "info", received: "success", confirmed: "success" };
+        const lowStk = data.prods.filter(p => p.stk <= p.min);
+        return (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
+              <KPI label="今月の発注" value={poData.length + "件"} icon={<IcBox />} color={P} />
+              <KPI label="発注総額" value={fmtY(poData.reduce((s, p) => s + p.amount, 0))} icon={<IcRcpt />} color={A} />
+              <KPI label="入荷待ち" value={poData.filter(p => p.st === "ordered").length + "件"} icon={<IcClk />} color="#BA7517" />
+              <KPI label="入荷済" value={poData.filter(p => p.st === "received").length + "件"} icon={<IcChk />} color="#0F6E56" />
+            </div>
+
+            {/* AI recommended orders */}
+            {lowStk.length > 0 && (
+              <Card style={{ borderLeft: "3px solid " + A, background: A + "04" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: A, display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}><IcZap /> AI推奨発注</div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>需要予測に基づき、以下の商品の発注を推奨します</div>
+                {lowStk.map(p => (
+                  <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--border-light)", fontSize: 13 }}>
+                    <div>
+                      <span style={{ fontWeight: 500 }}>{p.name}</span>
+                      <span style={{ color: "var(--text-tertiary)", marginLeft: 8, fontSize: 12 }}>残{p.stk}個 → 推奨{p.min * 2}個</span>
+                    </div>
+                    <Btn variant="primary" size="sm"><IcPlus /> 発注書作成</Btn>
+                  </div>
+                ))}
+              </Card>
+            )}
+
+            <Tbl cols={[
+              { label: "発注番号", render: r => <span style={{ fontWeight: 500 }}>{r.id}</span> },
+              { label: "仕入先", key: "supplier" },
+              { label: "発注日", key: "date" },
+              { label: "納品予定", render: r => {
+                const overdue = r.st !== "received" && r.eta < today();
+                return <span style={{ color: overdue ? "#A32D2D" : "inherit", fontWeight: overdue ? 600 : 400 }}>{r.eta}</span>;
+              }},
+              { label: "金額", render: r => <span style={{ fontWeight: 600 }}>{fmtY(r.amount)}</span> },
+              { label: "ステータス", render: r => <Badge variant={stVar[r.st]}>{stLabel[r.st]}</Badge> },
+              { label: "操作", render: r => <span style={{ fontSize: 12, cursor: "pointer", color: A }}>⋯</span> },
+            ]} data={poData} />
+          </>
+        );
+      })()}
+
       {v === "alert" && (
         <>
           {alertCount > 0 ? (
@@ -344,7 +397,7 @@ export function AcctView({ data }) {
           <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>仕訳帳・財務諸表・勘定科目管理</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {[["jnl", "仕訳帳"], ["pl", "損益計算書"], ["bs", "貸借対照表"], ["tb", "試算表"]].map(([k, l]) => (
+          {[["jnl", "仕訳帳"], ["ledger", "総勘定元帳"], ["accts", "勘定科目"], ["pl", "損益計算書"], ["bs", "貸借対照表"], ["tb", "試算表"]].map(([k, l]) => (
             <Btn key={k} variant={v === k ? "primary" : "default"} size="md" onClick={() => setV(k)}>{l}</Btn>
           ))}
         </div>
@@ -380,6 +433,64 @@ export function AcctView({ data }) {
             </div>
           </Card>
         </>
+      )}
+
+      {/* P/L */}
+      {/* General Ledger */}
+      {v === "ledger" && (
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>総勘定元帳</h3>
+            <select style={{ ...inputStyle, width: 200 }} defaultValue="売掛金">
+              {accounts.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <Tbl cols={[
+            { label: "日付", key: "date" },
+            { label: "摘要", render: r => <span>{r.auto && <Badge variant="purple">自動</Badge>} {r.desc}</span> },
+            { label: "借方", render: r => r.dr.acc === "売掛金" ? <span style={{ fontWeight: 600 }}>{fmtY(r.dr.amt)}</span> : <span style={{ color: "var(--text-tertiary)" }}>—</span> },
+            { label: "貸方", render: r => r.cr.acc === "売掛金" ? <span style={{ fontWeight: 600 }}>{fmtY(r.cr.amt)}</span> : <span style={{ color: "var(--text-tertiary)" }}>—</span> },
+            { label: "残高", render: (r, i) => <span style={{ fontWeight: 600, color: P }}>{fmtY(Math.abs(data.jrnl.slice(0, i + 1).reduce((s, j) => s + (j.dr.acc === "売掛金" ? j.dr.amt : 0) - (j.cr.acc === "売掛金" ? j.cr.amt : 0), 0)))}</span> },
+          ]} data={data.jrnl.filter(j => j.dr.acc === "売掛金" || j.cr.acc === "売掛金")} />
+        </Card>
+      )}
+
+      {/* Account Master */}
+      {v === "accts" && (
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 4px" }}>勘定科目マスタ</h3>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{accounts.length}科目登録済み</div>
+            </div>
+            <Btn variant="primary" size="sm"><IcPlus /> 科目追加</Btn>
+          </div>
+          {(() => {
+            const cats = { "資産": ["現金", "普通預金", "売掛金", "棚卸資産", "固定資産"], "負債": ["買掛金", "未払金"], "純資産": ["資本金", "利益剰余金"], "収益": ["売上高"], "費用": ["売上原価", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "雑費"] };
+            return Object.entries(cats).map(([cat, accs]) => (
+              <div key={cat} style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: cat === "資産" ? P : cat === "負債" ? "#A32D2D" : cat === "純資産" ? "#0F6E56" : cat === "収益" ? "#0F6E56" : "#BA7517", marginBottom: 6, padding: "6px 0", borderBottom: "1px solid var(--border-light)" }}>{cat}</div>
+                {accs.map(acc => {
+                  const s = accSummary[acc];
+                  return (
+                    <div key={acc} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0 6px 12px", fontSize: 13, borderBottom: "1px solid var(--border-light)" }}>
+                      <span>{acc}</span>
+                      <div style={{ display: "flex", gap: 24 }}>
+                        <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>借方: {s ? fmtY(s.dr) : "—"}</span>
+                        <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>貸方: {s ? fmtY(s.cr) : "—"}</span>
+                        <span style={{ fontWeight: 500, minWidth: 80, textAlign: "right" }}>{s ? fmtY(Math.abs(s.dr - s.cr)) : "—"}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ));
+          })()}
+          <Card style={{ borderLeft: "3px solid " + A, background: A + "04", marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: A, fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}><IcZap /> AIカテゴリ提案</div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>新しい取引を入力すると、AIが最適な勘定科目を自動推奨します</div>
+          </Card>
+        </Card>
       )}
 
       {/* P/L */}
@@ -582,7 +693,7 @@ export function HRView({ data, role, confirmPayroll }) {
           <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>従業員管理・勤怠・給与計算</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {[["emp", "従業員一覧"], ["pay", "給与計算"], ["summary", "人件費分析"]].map(([k, l]) => (
+          {[["emp", "従業員一覧"], ["worklog", "ワークログ"], ["pay", "給与計算"], ["bonus", "賞与"], ["summary", "人件費分析"]].map(([k, l]) => (
             <Btn key={k} variant={v === k ? "primary" : "default"} size="md" onClick={() => setV(k)}>{l}</Btn>
           ))}
         </div>
@@ -644,6 +755,45 @@ export function HRView({ data, role, confirmPayroll }) {
         </>
       )}
 
+      {/* Worklog */}
+      {v === "worklog" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
+            <KPI label="出勤済" value={data.emps.length - 1 + "名"} icon={<IcChk />} color="#0F6E56" />
+            <KPI label="勤務中" value="1名" icon={<IcClk />} color={P} />
+            <KPI label="欠勤" value="0名" icon={<IcAlrt />} color="#A32D2D" />
+            <KPI label="平均残業" value="12.5h" sub="今月" icon={<IcCalc />} color="#BA7517" />
+          </div>
+          <Card>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>本日の勤怠状況</div>
+            <Tbl cols={[
+              { label: "従業員", render: r => <span style={{ fontWeight: 500 }}>{r.name}</span> },
+              { label: "部署", render: r => <Badge variant="default">{r.dept}</Badge> },
+              { label: "出勤時刻", render: (r, i) => <span style={{ color: "#0F6E56" }}>{i === 0 ? "09:02" : i === 1 ? "08:55" : i === 2 ? "09:15" : "08:48"}</span> },
+              { label: "退勤時刻", render: (r, i) => i < 3 ? <span style={{ color: "var(--text-tertiary)" }}>—</span> : <span>18:10</span> },
+              { label: "残業(分)", render: (r, i) => <span>{i === 3 ? "10" : "—"}</span> },
+              { label: "ステータス", render: (r, i) => <Badge variant={i < 3 ? "info" : "success"}>{i < 3 ? "勤務中" : "退勤済"}</Badge> },
+            ]} data={data.emps} />
+          </Card>
+          <Card>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>部署別 月間サマリー</div>
+            {Object.entries(deptMap).map(([dept, count]) => (
+              <div key={dept} style={{ marginBottom: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 500 }}>{dept}（{count}名）</span>
+                  <div style={{ display: "flex", gap: 16, fontSize: 12, color: "var(--text-tertiary)" }}>
+                    <span>出勤率 98%</span>
+                    <span>平均残業 {Math.round(Math.random() * 15 + 5)}h</span>
+                    <span>有給消化 {Math.round(Math.random() * 30 + 10)}%</span>
+                  </div>
+                </div>
+                <PBar value={98} max={100} color={P} h={4} />
+              </div>
+            ))}
+          </Card>
+        </>
+      )}
+
       {/* Payroll */}
       {v === "pay" && (
         <Card>
@@ -695,6 +845,46 @@ export function HRView({ data, role, confirmPayroll }) {
               3. 全銀FBデータを出力可能
             </div>
           </Card>
+        </Card>
+      )}
+
+      {/* Summary */}
+      {/* Bonus */}
+      {v === "bonus" && (
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>賞与計算 — 2025年 夏季</div>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>支給予定日: 2025年6月25日</div>
+            </div>
+            <Badge variant="info">未確定</Badge>
+          </div>
+          <Tbl cols={[
+            { label: "氏名", render: r => <span style={{ fontWeight: 500 }}>{r.name}</span> },
+            { label: "部署", render: r => <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{r.dept}</span> },
+            { label: "基本給", render: r => fmtY(r.sal) },
+            { label: "支給月数", render: () => <span style={{ fontWeight: 500 }}>2.0ヶ月</span> },
+            { label: "賞与額", render: r => <span style={{ fontWeight: 600, color: P }}>{fmtY(r.sal * 2)}</span> },
+            { label: "社保", render: r => <span style={{ color: "var(--text-tertiary)" }}>{fmtY(Math.round(r.sal * 2 * 0.15))}</span> },
+            { label: "所得税", render: r => <span style={{ color: "var(--text-tertiary)" }}>{fmtY(Math.round(r.sal * 2 * 0.1))}</span> },
+            { label: "手取り", render: r => <span style={{ fontWeight: 600, color: "#0F6E56" }}>{fmtY(Math.round(r.sal * 2 * 0.75))}</span> },
+          ]} data={data.emps} />
+          <div style={{ marginTop: 16, borderTop: "2px solid var(--border-light)", paddingTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            {[
+              { l: "賞与総額", a: data.emps.reduce((s, e) => s + e.sal * 2, 0), color: P },
+              { l: "控除合計", a: Math.round(data.emps.reduce((s, e) => s + e.sal * 2, 0) * 0.25), color: "#A32D2D" },
+              { l: "差引支給額", a: Math.round(data.emps.reduce((s, e) => s + e.sal * 2, 0) * 0.75), color: "#0F6E56" },
+            ].map(r => (
+              <div key={r.l} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{r.l}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: r.color }}>{fmtY(r.a)}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <Btn>全銀FBデータ出力</Btn>
+            <Btn variant="success"><IcZap /> 賞与確定 → 仕訳自動生成</Btn>
+          </div>
         </Card>
       )}
 
@@ -1204,7 +1394,7 @@ export function SettView({ data }) {
           <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>会社情報・連携ルール・システム設定</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {[["company", "会社情報"], ["auto", "自動連携"], ["system", "システム"]].map(([k, l]) => (
+          {[["company", "会社情報"], ["accounting", "会計設定"], ["notify", "通知設定"], ["auto", "自動連携"], ["system", "システム"]].map(([k, l]) => (
             <Btn key={k} variant={v === k ? "primary" : "default"} size="md" onClick={() => setV(k)}>{l}</Btn>
           ))}
         </div>
@@ -1214,50 +1404,109 @@ export function SettView({ data }) {
       {v === "company" && (
         <>
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>会社基本情報</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>会社基本情報</h3>
+              <Btn variant="primary" size="sm">保存</Btn>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Fld label="会社名"><input defaultValue={data.company.name} style={inputStyle} /></Fld>
+              <Fld label="代表者名"><input defaultValue="山田 太郎" style={inputStyle} /></Fld>
+              <Fld label="住所" style={{ gridColumn: "span 2" }}><input defaultValue="東京都千代田区丸の内1-1-1" style={inputStyle} /></Fld>
+              <Fld label="電話番号"><input defaultValue="03-1234-5678" style={inputStyle} /></Fld>
+              <Fld label="メールアドレス"><input defaultValue="info@demo.co.jp" style={inputStyle} /></Fld>
+              <Fld label="法人番号"><input defaultValue="1234567890123" style={inputStyle} /></Fld>
+              <Fld label="決算月">
+                <select defaultValue="3" style={inputStyle}>
+                  {[...Array(12)].map((_, i) => <option key={i} value={i + 1}>{i + 1}月</option>)}
+                </select>
+              </Fld>
+              <Fld label="会計年度 開始月">
+                <select defaultValue="4" style={inputStyle}>
+                  {[...Array(12)].map((_, i) => <option key={i} value={i + 1}>{i + 1}月</option>)}
+                </select>
+              </Fld>
+              <Fld label="会計年度 終了月">
+                <select defaultValue="3" style={inputStyle}>
+                  {[...Array(12)].map((_, i) => <option key={i} value={i + 1}>{i + 1}月</option>)}
+                </select>
+              </Fld>
+            </div>
+          </Card>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
             {[
-              { l: "会社名", v: data.company.name },
-              { l: "プラン", v: "Pro", badge: true },
-              { l: "登録日", v: "2024年1月15日" },
               { l: "従業員数", v: data.emps.length + "名" },
               { l: "商品数", v: data.prods.length + "SKU" },
               { l: "顧客数", v: data.custs.length + "社" },
             ].map(r => (
-              <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border-light)", fontSize: 13 }}>
-                <span style={{ color: "var(--text-secondary)" }}>{r.l}</span>
-                {r.badge ? <Badge variant="purple">{r.v}</Badge> : <span style={{ fontWeight: 500 }}>{r.v}</span>}
-              </div>
+              <Card key={r.l} style={{ textAlign: "center", padding: 16 }}>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{r.v}</div>
+                <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{r.l}</div>
+              </Card>
             ))}
-          </Card>
+          </div>
+        </>
+      )}
+
+      {/* Accounting Settings */}
+      {v === "accounting" && (
+        <>
           <Card>
             <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>会計設定</h3>
-            {[
-              { l: "会計期間", v: "4月〜3月（3月決算）" },
-              { l: "消費税率", v: "10%" },
-              { l: "課税方式", v: "税抜経理" },
-              { l: "通貨", v: "JPY（日本円）" },
-            ].map(r => (
-              <div key={r.l} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border-light)", fontSize: 13 }}>
-                <span style={{ color: "var(--text-secondary)" }}>{r.l}</span>
-                <span style={{ fontWeight: 500 }}>{r.v}</span>
-              </div>
-            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Fld label="消費税率">
+                <select defaultValue="10" style={inputStyle}>
+                  <option value="10">10%（標準税率）</option><option value="8">8%（軽減税率）</option>
+                </select>
+              </Fld>
+              <Fld label="課税方式">
+                <select defaultValue="exclusive" style={inputStyle}>
+                  <option value="exclusive">税抜経理</option><option value="inclusive">税込経理</option>
+                </select>
+              </Fld>
+              <Fld label="通貨"><input defaultValue="JPY（日本円）" style={inputStyle} readOnly /></Fld>
+              <Fld label="インボイス登録番号"><input defaultValue="T1234567890123" style={inputStyle} /></Fld>
+            </div>
           </Card>
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>人事設定</h3>
-            {[
-              { l: "給与支給日", v: "毎月25日" },
-              { l: "締め日", v: "毎月末日" },
-              { l: "社会保険料率（会社負担）", v: "約15%" },
-              { l: "有給付与ルール", v: "法定基準（勤続年数ベース）" },
-            ].map(r => (
-              <div key={r.l} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border-light)", fontSize: 13 }}>
-                <span style={{ color: "var(--text-secondary)" }}>{r.l}</span>
-                <span style={{ fontWeight: 500 }}>{r.v}</span>
-              </div>
-            ))}
+            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>人事・給与設定</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Fld label="給与支給日">
+                <select defaultValue="25" style={inputStyle}>{[15,20,25,28].map(d => <option key={d} value={d}>毎月{d}日</option>)}</select>
+              </Fld>
+              <Fld label="締め日">
+                <select defaultValue="末" style={inputStyle}><option value="末">毎月末日</option><option value="20">毎月20日</option><option value="25">毎月25日</option></select>
+              </Fld>
+              <Fld label="社会保険料率（会社負担）"><input defaultValue="15" type="number" style={inputStyle} /> </Fld>
+              <Fld label="有給付与ルール">
+                <select defaultValue="legal" style={inputStyle}><option value="legal">法定基準（勤続年数ベース）</option><option value="custom">カスタム</option></select>
+              </Fld>
+            </div>
           </Card>
         </>
+      )}
+
+      {/* Notification Settings */}
+      {v === "notify" && (
+        <Card>
+          <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px" }}>通知設定</h3>
+          {[
+            { l: "低在庫アラート", desc: "在庫が発注点を下回った場合に通知", on: true },
+            { l: "入金期限超過通知", desc: "支払期限を超過した請求書がある場合に通知", on: true },
+            { l: "給与計算リマインダー", desc: "給与支給日の5日前にリマインド", on: true },
+            { l: "新規受注通知", desc: "受注が確定された際に通知", on: true },
+            { l: "AI経営インサイト", desc: "AIが重要な経営変化を検知した際に通知", on: true },
+            { l: "日次連携レポート", desc: "毎日の自動連携結果をメールで配信", on: false },
+            { l: "週次経営サマリー", desc: "週次の経営サマリーをメールで配信", on: false },
+          ].map(r => (
+            <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border-light)" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{r.l}</div>
+                <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{r.desc}</div>
+              </div>
+              <Badge variant={r.on ? "success" : "default"}>{r.on ? "有効" : "無効"}</Badge>
+            </div>
+          ))}
+        </Card>
       )}
 
       {/* Auto Rules */}

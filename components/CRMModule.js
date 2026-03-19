@@ -6,8 +6,8 @@ import { fmtY, today, uid } from './useAuto';
 
 const P = "#2b6876";
 const A = "#534AB7";
-const STG = { lead: "リード", qualification: "精査", proposal: "提案", negotiation: "交渉", won: "受注", lost: "失注" };
-const STGC = { lead: "#888", qualification: "#854F0B", proposal: P, negotiation: A, won: "#0F6E56", lost: "#993556" };
+const STG = { lead: "リード", qualification: "精査", proposal: "提案", negotiation: "交渉", processing: "処理中", won: "完了", lost: "失注" };
+const STGC = { lead: "#888", qualification: "#854F0B", proposal: P, negotiation: A, processing: "#D85A30", won: "#0F6E56", lost: "#993556" };
 
 function ScoreBadge({ score }) {
   const color = score >= 80 ? "#0F6E56" : score >= 60 ? "#BA7517" : "#A32D2D";
@@ -315,8 +315,8 @@ export default function CRMModule({ data, setData }) {
 
       {/* Pipeline View */}
       {view === "pipe" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-          {["qualification", "proposal", "negotiation", "won"].map(stage => {
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10 }}>
+          {["lead", "qualification", "proposal", "negotiation", "processing", "won"].map(stage => {
             const stageDeals = data.deals.filter(d => d.stage === stage);
             const stageTotal = stageDeals.reduce((s, d) => s + d.val, 0);
             return (

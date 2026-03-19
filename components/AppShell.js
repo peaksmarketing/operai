@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../lib/supabase-browser';
-import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi } from './Icons';
+import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi, IcChat, IcScan, IcMail, IcMic, IcFile, IcNotif } from './Icons';
 import { DATA } from './data';
 import { useAuto } from './useAuto';
 
@@ -37,12 +37,24 @@ function AutoToast({ items, onDismiss }) {
 
 const MENU_COMPANY = [
   { id: "dashboard", path: "/dashboard", l: "ダッシュボード", Ic: IcDash },
-  { id: "ai", path: "/ai", l: "AI経営参謀", Ic: IcAi, accent: true },
+  { id: "_label_sales", label: "営業・顧客管理" },
   { id: "crm", path: "/crm", l: "営業・顧客管理", Ic: IcUsers },
+  { id: "_label_inv", label: "在庫・物流" },
   { id: "inventory", path: "/inventory", l: "在庫・物流", Ic: IcBox },
+  { id: "_label_acct", label: "会計・財務" },
   { id: "accounting", path: "/accounting", l: "会計・財務", Ic: IcCalc },
+  { id: "billing", path: "/billing", l: "請求・入金管理", Ic: IcRcpt },
+  { id: "_label_hr", label: "人事・労務" },
   { id: "hr", path: "/hr", l: "人事・労務", Ic: IcPpl },
-  { id: "billing", path: "/billing", l: "請求・決済", Ic: IcRcpt },
+  { id: "_label_ai", label: "AI機能" },
+  { id: "ai", path: "/ai", l: "AI経営参謀", Ic: IcAi, accent: true },
+  { id: "ai-chat", path: "/ai-chat", l: "AIチャット", Ic: IcChat, accent: true },
+  { id: "ai-ocr", path: "/ai-ocr", l: "AI請求書OCR", Ic: IcScan, accent: true },
+  { id: "ai-mail", path: "/ai-mail", l: "AIメール生成", Ic: IcMail, accent: true },
+  { id: "ai-minutes", path: "/ai-minutes", l: "AI議事録", Ic: IcMic, accent: true },
+  { id: "ai-report", path: "/ai-report", l: "AI日報・週報", Ic: IcFile, accent: true },
+  { id: "ai-notify", path: "/ai-notify", l: "AIスマート通知", Ic: IcNotif, accent: true },
+  { id: "_label_sys", label: "システム" },
   { id: "automation", path: "/automation", l: "データ連携", Ic: IcFlow },
   { id: "settings", path: "/settings", l: "設定", Ic: IcSet },
 ];
@@ -124,7 +136,7 @@ export default function AppShell({ children }) {
   const role = user?.role || 'company';
   const menu = role === "company" ? MENU_COMPANY : MENU_EMPLOYEE;
   const unread = data.notifs.filter(n => !n.read).length;
-  const currentPage = menu.find(m => pathname.startsWith(m.path));
+  const currentPage = menu.find(m => m.path && pathname.startsWith(m.path));
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
@@ -149,15 +161,19 @@ export default function AppShell({ children }) {
             <img src="/logo.svg" alt="Operai" style={{ height: 27, filter: "brightness(0) invert(1)" }} />
           )}
         </div>
-        <div style={{ flex: 1, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ flex: 1, padding: 8, display: "flex", flexDirection: "column", gap: 1, overflowY: "auto" }}>
           {menu.map(m => {
+            if (m.label) {
+              if (col) return null;
+              return <div key={m.id} style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", padding: "10px 12px 4px", textTransform: "uppercase", letterSpacing: 0.5 }}>{m.label}</div>;
+            }
             const MIcon = m.Ic;
             const isActive = pathname.startsWith(m.path);
             return (
               <div key={m.id} onClick={() => { router.push(m.path); setMobileMenuOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "10px 14px" : "9px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.95)" : "rgba(255,255,255,0.65)", fontWeight: isActive || m.accent ? 600 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = m.accent ? "rgba(83,74,183,0.3)" : "rgba(255,255,255,0.08)"; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.2)" : "transparent"; }}>
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "8px 14px" : "7px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.15)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.9)" : "rgba(255,255,255,0.65)", fontWeight: isActive ? 600 : m.accent ? 500 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = m.accent ? "rgba(83,74,183,0.25)" : "rgba(255,255,255,0.08)"; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.15)" : "transparent"; }}>
                 <span style={{ flexShrink: 0, display: "flex" }}><MIcon /></span>
                 {!col && <span>{m.l}</span>}
               </div>
