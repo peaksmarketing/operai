@@ -832,7 +832,7 @@ export function HRView({ data, role, confirmPayroll }) {
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Btn>全銀FBデータ出力</Btn>
+            <Btn onClick={() => { const lines = data.emps.map(e => [e.name.replace(/ /g,""),e.dept,Math.round(e.sal*0.804)].join(",")); const blob = new Blob(["氏名,部署,振込額\n"+lines.join("\n")], {type:"text/csv"}); const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=u; a.download="zengin_fb_salary.csv"; a.click(); URL.revokeObjectURL(u); }}>全銀FBデータ出力</Btn>
             <Btn variant="success" onClick={() => { confirmPayroll(); setPd(true); }} disabled={pd}><IcZap /> 給与確定 → 仕訳自動生成</Btn>
           </div>
           {pd && <div style={{ marginTop: 12, padding: 10, background: "var(--success-bg)", borderRadius: 8, fontSize: 12, color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}><IcChk /> 給与仕訳（給与手当/普通預金）・社会保険仕訳（法定福利費/未払金）を自動生成しました</div>}
@@ -882,7 +882,7 @@ export function HRView({ data, role, confirmPayroll }) {
             ))}
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Btn>全銀FBデータ出力</Btn>
+            <Btn onClick={() => { const lines = data.emps.map(e => [e.name.replace(/ /g,""),e.dept,Math.round(e.sal*2*0.75)].join(",")); const blob = new Blob(["氏名,部署,振込額\n"+lines.join("\n")], {type:"text/csv"}); const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=u; a.download="zengin_fb_bonus.csv"; a.click(); URL.revokeObjectURL(u); }}>全銀FBデータ出力</Btn>
             <Btn variant="success"><IcZap /> 賞与確定 → 仕訳自動生成</Btn>
           </div>
         </Card>

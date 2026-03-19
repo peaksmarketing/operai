@@ -150,12 +150,13 @@ export function AIOCRPage() {
         <Card>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>画像アップロード</div>
           <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>JPG, PNG, WEBP対応（16MBまで）</div>
+          <input type="file" accept="image/*" id="ocr-file" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) { setFile({ name: e.target.files[0].name, size: (e.target.files[0].size / 1024 / 1024).toFixed(1) + "MB" }); setResult(null); } }} />
           <div style={{ border: "2px dashed var(--border)", borderRadius: 12, padding: 48, textAlign: "center", cursor: "pointer", transition: "0.2s", background: file ? P + "06" : "transparent" }}
-            onClick={() => { const f = { name: "sample_invoice.png", size: "1.2MB" }; setFile(f); setResult(null); }}>
+            onClick={() => document.getElementById("ocr-file").click()}>
             {file ? (
               <div><div style={{ fontSize: 14, fontWeight: 500, color: P }}>{file.name}</div><div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{file.size}</div></div>
             ) : (
-              <div><div style={{ fontSize: 32, marginBottom: 8, opacity: 0.3 }}>📤</div><div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>請求書画像をドロップ</div><div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>または、クリックしてファイルを選択</div></div>
+              <div><div style={{ color: "var(--text-tertiary)", marginBottom: 8, opacity: 0.5 }}><IcAlrt /></div><div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>請求書画像をクリックして選択</div><div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>JPG / PNG / WEBP</div></div>
             )}
           </div>
           <Btn variant="primary" size="lg" style={{ width: "100%", marginTop: 16 }} onClick={handleProcess} disabled={!file || processing}>
@@ -188,7 +189,7 @@ export function AIOCRPage() {
             </div>
           ) : (
             <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
-              <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.3 }}>📄</div>
+              <div style={{ marginBottom: 8, opacity: 0.4 }}><IcRcpt /></div>
               <div style={{ fontSize: 13 }}>画像をアップロードしてAI解析を実行</div>
               <div style={{ fontSize: 12, marginTop: 4 }}>結果がここに表示されます</div>
             </div>
@@ -209,11 +210,11 @@ export function AIMailPage() {
   const [generating, setGenerating] = useState(false);
 
   const templates = [
-    { id: "invoice", label: "請求書送付", desc: "請求書を添付して送付", icon: "📄" },
-    { id: "reminder", label: "支払いリマインダー", desc: "丁寧な支払い催促", icon: "⏰" },
-    { id: "overdue", label: "支払い督促", desc: "期限超過の督促", icon: "⚠️" },
-    { id: "thanks", label: "入金お礼", desc: "入金確認のお礼", icon: "💝" },
-    { id: "custom", label: "カスタム", desc: "自由なビジネスメール", icon: "✏️" },
+    { id: "invoice", label: "請求書送付", desc: "請求書を添付して送付" },
+    { id: "reminder", label: "支払いリマインダー", desc: "丁寧な支払い催促" },
+    { id: "overdue", label: "支払い督促", desc: "期限超過の督促" },
+    { id: "thanks", label: "入金お礼", desc: "入金確認のお礼" },
+    { id: "custom", label: "カスタム", desc: "自由なビジネスメール" },
   ];
 
   const generate = () => {
@@ -243,7 +244,7 @@ export function AIMailPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {templates.map(t => (
                 <div key={t.id} onClick={() => setType(t.id)} style={{ padding: "12px 14px", borderRadius: 10, border: type === t.id ? `2px solid ${A}` : "1px solid var(--border-light)", background: type === t.id ? A + "08" : "transparent", cursor: "pointer", transition: "0.15s" }}>
-                  <div style={{ fontSize: 14, marginBottom: 2 }}>{t.icon} <span style={{ fontWeight: 600, color: type === t.id ? A : "inherit" }}>{t.label}</span></div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: type === t.id ? A : "inherit", marginBottom: 2 }}>{t.label}</div>
                   <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t.desc}</div>
                 </div>
               ))}
@@ -279,7 +280,7 @@ export function AIMailPage() {
             </div>
           ) : (
             <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
-              <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.3 }}>✉️</div>
+              <div style={{ marginBottom: 8, opacity: 0.4 }}><IcSnd /></div>
               <div style={{ fontSize: 13 }}>情報を入力して生成ボタンを押してください</div>
               <div style={{ fontSize: 12, marginTop: 4 }}>結果がここに表示されます</div>
             </div>
@@ -340,10 +341,11 @@ export function AIMinutesPage() {
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>音声ファイル</div>
             <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 16 }}>MP3, WAV, M4A対応（16MBまで）</div>
             <Fld label="会議タイトル"><input value={title} onChange={e => setTitle(e.target.value)} placeholder="例: 第3回営業戦略会議" style={inputStyle} /></Fld>
+            <input type="file" accept="audio/*" id="minutes-file" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) setFile({ name: e.target.files[0].name }); }} />
             <div style={{ border: "2px dashed var(--border)", borderRadius: 12, padding: 40, textAlign: "center", cursor: "pointer", marginTop: 12 }}
-              onClick={() => setFile({ name: "meeting_20250319.mp3" })}>
+              onClick={() => document.getElementById("minutes-file").click()}>
               {file ? <div style={{ fontSize: 13, fontWeight: 500, color: P }}>{file.name}</div> : (
-                <div><div style={{ fontSize: 28, marginBottom: 8, opacity: 0.3 }}>🎙️</div><div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>音声ファイルをドロップ</div></div>
+                <div><div style={{ marginBottom: 8, opacity: 0.4, color: "var(--text-tertiary)" }}><IcAi /></div><div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>音声ファイルをクリックして選択</div></div>
               )}
             </div>
             <Btn variant="primary" size="lg" style={{ width: "100%", marginTop: 16 }} onClick={handleGenerate} disabled={!title || processing}>
@@ -369,7 +371,7 @@ export function AIMinutesPage() {
               </div>
             ) : (
               <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
-                <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.3 }}>📝</div>
+                <div style={{ marginBottom: 8, opacity: 0.4 }}><IcFlow /></div>
                 <div style={{ fontSize: 13 }}>音声ファイルをアップロードして議事録を作成</div>
               </div>
             )}
@@ -446,7 +448,7 @@ export function AIReportPage({ data }) {
               <div style={{ padding: 16, background: "var(--bg-secondary)", borderRadius: 10, fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{result}</div>
             ) : (
               <div style={{ padding: 48, textAlign: "center", color: "var(--text-tertiary)" }}>
-                <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.3 }}>📋</div>
+                <div style={{ marginBottom: 8, opacity: 0.4 }}><IcCalc /></div>
                 <div style={{ fontSize: 13 }}>日付を選択してレポートを生成</div>
               </div>
             )}
@@ -557,7 +559,7 @@ export function AINotifyPage({ data }) {
         </Card>
       ) : (
         <Card style={{ textAlign: "center", padding: 48 }}>
-          <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.3 }}>🔔</div>
+          <div style={{ marginBottom: 8, opacity: 0.4, color: "var(--text-tertiary)" }}><IcAlrt /></div>
           <div style={{ fontSize: 14, color: "var(--text-tertiary)" }}>「通知をチェック」ボタンを押してAI分析を開始</div>
           <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>AIがデータを分析し、重要な通知を自動生成します</div>
         </Card>

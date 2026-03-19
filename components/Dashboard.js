@@ -140,17 +140,16 @@ export default function Dashboard({ data, role }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 8 }}>
           {[
-            { label: "請求書OCR", icon: "📷", path: "/ai-ocr" },
-            { label: "メール生成", icon: "✉️", path: "/ai-mail" },
-            { label: "議事録要約", icon: "🎙️", path: "/ai-minutes" },
-            { label: "売上予測", icon: "📈", path: "/ai-report" },
-            { label: "スマート通知", icon: "🔔", path: "/ai-notify" },
-            { label: "経営参謀", icon: "🧠", path: "/ai" },
+            { label: "請求書OCR", path: "/ai-ocr" },
+            { label: "メール生成", path: "/ai-mail" },
+            { label: "議事録要約", path: "/ai-minutes" },
+            { label: "売上予測", path: "/ai-report" },
+            { label: "スマート通知", path: "/ai-notify" },
+            { label: "経営参謀", path: "/ai" },
           ].map(a => (
-            <div key={a.label} onClick={() => router.push(a.path)} style={{ textAlign: "center", padding: "12px 8px", borderRadius: 10, background: "var(--bg-primary)", border: "1px solid var(--border-light)", cursor: "pointer", transition: "0.15s" }}
+            <div key={a.label} onClick={() => router.push(a.path)} style={{ textAlign: "center", padding: "14px 8px", borderRadius: 10, background: "var(--bg-primary)", border: "1px solid var(--border-light)", cursor: "pointer", transition: "0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = A; e.currentTarget.style.background = A + "08"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.background = "var(--bg-primary)"; }}>
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{a.icon}</div>
-              <div style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)" }}>{a.label}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: A }}>{a.label}</div>
             </div>
           ))}
         </div>
@@ -191,12 +190,12 @@ export default function Dashboard({ data, role }) {
         <Card>
           <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}><span style={{ color: A }}><IcAi /></span> AI経営参謀</div>
           {[
-            { label: "売上予測", desc: "来月の売上は前月比+12%の見込み", color: "#0F6E56", icon: "📈" },
-            { label: "在庫最適化", desc: `在庫アラート: ${lowStock.length}件`, color: lowStock.length > 0 ? "#BA7517" : "#0F6E56", icon: "📦" },
-            { label: "売掛金管理", desc: invTotal - pR > 0 ? `期限超過請求: ${data.invs.filter(i => i.st !== "paid" && i.due < new Date().toISOString().slice(0, 10)).length}件` : "回収状況良好", color: invTotal - pR > 0 ? "#A32D2D" : "#0F6E56", icon: "💰" },
+            { label: "売上予測", desc: "来月の売上は前月比+12%の見込み", color: "#0F6E56" },
+            { label: "在庫最適化", desc: `在庫アラート: ${lowStock.length}件`, color: lowStock.length > 0 ? "#BA7517" : "#0F6E56" },
+            { label: "売掛金管理", desc: invTotal - pR > 0 ? `期限超過請求: ${data.invs.filter(i => i.st !== "paid" && i.due < new Date().toISOString().slice(0, 10)).length}件` : "回収状況良好", color: invTotal - pR > 0 ? "#A32D2D" : "#0F6E56" },
           ].map(r => (
             <div key={r.label} style={{ padding: "10px 12px", borderRadius: 8, background: r.color + "08", marginBottom: 8, cursor: "pointer" }} onClick={() => router.push('/ai')}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}><span style={{ fontSize: 12 }}>{r.icon}</span><span style={{ fontSize: 12, fontWeight: 600, color: r.color }}>{r.label}</span></div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: r.color, marginBottom: 2 }}>{r.label}</div>
               <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{r.desc}</div>
             </div>
           ))}
