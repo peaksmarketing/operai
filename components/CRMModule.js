@@ -21,7 +21,7 @@ function ScoreBadge({ score }) {
 
 /* ─── Customer Detail (360° View) ─── */
 function CustomerDetail({ customer, data, setData, onBack }) {
-  const c = customer;
+  const c = data.custs.find(x => x.id === customer.id) || customer;
   const deals = data.deals.filter(d => d.cid === c.id);
   const invoices = data.invs.filter(i => i.cid === c.id);
   const orders = data.ords.filter(o => o.cid === c.id);
@@ -34,6 +34,8 @@ function CustomerDetail({ customer, data, setData, onBack }) {
   const [showAddAct, setShowAddAct] = useState(false);
   const [actType, setActType] = useState("call");
   const [actNote, setActNote] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: c.name, ct: c.ct, em: c.em, phone: c.phone || "", ind: c.ind });
 
   const typeLabel = { call: "電話", email: "メール", meeting: "商談", other: "その他" };
   const typeColor = { call: "#2b6876", email: "#534AB7", meeting: "#0F6E56", other: "#888" };
@@ -50,9 +52,53 @@ function CustomerDetail({ customer, data, setData, onBack }) {
     setShowAddAct(false);
   };
 
+  const handleDelete = () => {
+    if (!confirm(`「${c.name}」を削除しますか？関連する案件・請求書も削除されます。`)) return;
+    setData(prev => ({
+      ...prev,
+      custs: prev.custs.filter(x => x.id !== c.id),
+      deals: prev.deals.filter(x => x.cid !== c.id),
+      invs: prev.invs.filter(x => x.cid !== c.id),
+      ords: prev.ords.filter(x => x.cid !== c.id),
+      activities: (prev.activities || []).filter(x => x.cid !== c.id),
+    }));
+    onBack();
+  };
+
+  const handleSaveEdit = () => {
+    setData(prev => ({
+      ...prev,
+      custs: prev.custs.map(x => x.id === c.id ? { ...x, ...editForm } : x),
+    }));
+    setEditing(false);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <Btn variant="ghost" onClick={onBack}>← 顧客一覧に戻る</Btn>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Btn variant="ghost" onClick={onBack}>← 顧客一覧に戻る</Btn>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn size="sm" onClick={() => setEditing(!editing)}>{editing ? "キャンセル" : "編集"}</Btn>
+          <Btn size="sm" variant="danger" onClick={handleDelete}>削除</Btn>
+        </div>
+      </div>
+
+      {/* Edit form */}
+      {editing && (
+        <Card style={{ borderLeft: "3px solid " + A }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>顧客情報を編集</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Fld label="会社名"><input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={inputStyle} /></Fld>
+            <Fld label="担当者"><input value={editForm.ct} onChange={e => setEditForm({...editForm, ct: e.target.value})} style={inputStyle} /></Fld>
+            <Fld label="メール"><input value={editForm.em} onChange={e => setEditForm({...editForm, em: e.target.value})} style={inputStyle} /></Fld>
+            <Fld label="電話"><input value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} style={inputStyle} /></Fld>
+            <Fld label="業種"><input value={editForm.ind} onChange={e => setEditForm({...editForm, ind: e.target.value})} style={inputStyle} /></Fld>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+            <Btn variant="primary" onClick={handleSaveEdit}>保存</Btn>
+          </div>
+        </Card>
+      )}
 
       {/* Header card */}
       <Card>
@@ -221,6 +267,8 @@ export default function CRMModule({ data, setData }) {
   const [newCust, setNewCust] = useState({ name: "", ct: "", em: "", ind: "", phone: "" });
   const [csvData, setCsvData] = useState(null);
   const [csvError, setCsvError] = useState("");
+  const [showAddDeal, setShowAddDeal] = useState(false);
+  const [newDeal, setNewDeal] = useState({ title: "", cid: "", val: "", stage: "lead" });
 
   // Search filter
   const filtered = data.custs.filter(c => {
@@ -248,7 +296,9 @@ export default function CRMModule({ data, setData }) {
   };
 
   if (selected) {
-    return <CustomerDetail customer={selected} data={data} setData={setData} onBack={() => setSelected(null)} />;
+    const liveCustomer = data.custs.find(c => c.id === selected.id);
+    if (!liveCustomer) return <div>顧客が見つかりません</div>;
+    return <CustomerDetail customer={liveCustomer} data={data} setData={setData} onBack={() => setSelected(null)} />;
   }
 
   return (
@@ -266,6 +316,7 @@ export default function CRMModule({ data, setData }) {
           <Btn variant={view === "ai" ? "primary" : "default"} size="md" onClick={() => setView("ai")}>AI予測</Btn>
           <Btn variant={view === "csv" ? "primary" : "default"} size="md" onClick={() => setView("csv")}>CSV取込</Btn>
           <Btn variant="primary" size="md" onClick={() => setShowAdd(true)}><IcPlus /> 顧客登録</Btn>
+          {view === "pipe" && <Btn variant="primary" size="md" onClick={() => setShowAddDeal(true)} style={{ background: A }}><IcPlus /> 案件追加</Btn>}
         </div>
       </div>
 
@@ -336,7 +387,10 @@ export default function CRMModule({ data, setData }) {
                     return (
                       <Card key={d.id} style={{ padding: 14, borderLeft: "3px solid " + STGC[stage] }}
                         onClick={() => { const c = data.custs.find(x => x.id === d.cid); if (c) { setSelected(c); setView("cust"); } }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{d.title}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{d.title}</div>
+                          <span onClick={e => { e.stopPropagation(); setData(p => ({...p, deals: p.deals.filter(x => x.id !== d.id)})); }} style={{ fontSize: 11, cursor: "pointer", color: "var(--text-tertiary)", padding: "0 4px" }}>×</span>
+                        </div>
                         <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 8 }}>{cust.name || "—"}</div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontSize: 14, fontWeight: 700, color: STGC[stage] }}>{fmtY(d.val)}</span>
@@ -812,6 +866,37 @@ export default function CRMModule({ data, setData }) {
           </div>
         </Modal>
       )}
+
+      {showAddDeal && (
+        <Modal title="新規案件登録" onClose={() => setShowAddDeal(false)}>
+          <Fld label="案件名"><input value={newDeal.title} onChange={e => setNewDeal({...newDeal, title: e.target.value})} placeholder="例: クラウド移行プロジェクト" style={inputStyle} /></Fld>
+          <Fld label="顧客">
+            <select value={newDeal.cid} onChange={e => setNewDeal({...newDeal, cid: e.target.value})} style={inputStyle}>
+              <option value="">選択してください</option>
+              {data.custs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </Fld>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Fld label="金額"><input type="number" value={newDeal.val} onChange={e => setNewDeal({...newDeal, val: e.target.value})} placeholder="例: 5000000" style={inputStyle} /></Fld>
+            <Fld label="フェーズ">
+              <select value={newDeal.stage} onChange={e => setNewDeal({...newDeal, stage: e.target.value})} style={inputStyle}>
+                {Object.entries(STG).filter(([k]) => k !== "lost").map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </Fld>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
+            <Btn onClick={() => setShowAddDeal(false)}>キャンセル</Btn>
+            <Btn variant="primary" disabled={!newDeal.title || !newDeal.cid || !newDeal.val} onClick={() => {
+              setData(prev => ({
+                ...prev,
+                deals: [...prev.deals, { id: uid("d"), title: newDeal.title, cid: newDeal.cid, val: Number(newDeal.val), stage: newDeal.stage, prob: newDeal.stage === "lead" ? 20 : newDeal.stage === "qualification" ? 40 : newDeal.stage === "proposal" ? 60 : newDeal.stage === "negotiation" ? 80 : 95 }],
+              }));
+              setNewDeal({ title: "", cid: "", val: "", stage: "lead" });
+              setShowAddDeal(false);
+            }}>登録</Btn>
+          </div>
+        </Modal>
+      )}
     </div>
   );
-}
+};

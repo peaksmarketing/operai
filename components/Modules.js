@@ -11,8 +11,8 @@ const ORDS = { pending: "未確認", confirmed: "確定", shipped: "出荷済" }
 export function InvView({ data, setData, confirmOrder }) {
   const [v, setV] = useState("prod");
   const [showNew, setShowNew] = useState(false);
-  const [newCid, setNewCid] = useState(data.custs[0].id);
-  const [newItems, setNewItems] = useState([{ pid: data.prods[0].id, qty: 1 }]);
+  const [newCid, setNewCid] = useState(data.custs.length ? data.custs[0].id : "");
+  const [newItems, setNewItems] = useState([{ pid: data.prods.length ? data.prods[0].id : "", qty: 1 }]);
   const [search, setSearch] = useState("");
   const [selProd, setSelProd] = useState(null);
   const [selOrd, setSelOrd] = useState(null);
@@ -21,6 +21,8 @@ export function InvView({ data, setData, confirmOrder }) {
     { id: "PO-002", supplier: "グローバル電子部品", date: "2025-03-12", eta: "2025-03-20", amount: 360000, st: "received", items: [{ name: "IoTゲートウェイ G500", qty: 3, price: 120000 }] },
     { id: "PO-003", supplier: "テクノパーツ株式会社", date: "2025-03-10", eta: "2025-03-22", amount: 1200000, st: "ordered", items: [{ name: "産業用ロボットアーム RA-200", qty: 2, price: 600000 }] },
   ]);
+  const [showAddProd, setShowAddProd] = useState(false);
+  const [newProd, setNewProd] = useState({ name: "", sku: "", cat: "", price: "", cost: "", stk: "", min: "", wh: "東京" });
   const newTotal = newItems.reduce((s, it) => { const p = data.prods.find(x => x.id === it.pid); return s + (p ? p.price * it.qty : 0); }, 0);
 
   const filteredProds = data.prods.filter(p => {
@@ -58,6 +60,7 @@ export function InvView({ data, setData, confirmOrder }) {
           <Btn variant={v === "wh" ? "primary" : "default"} size="md" onClick={() => setV("wh")}>倉庫別</Btn>
           <Btn variant={v === "alert" ? "primary" : "default"} size="md" onClick={() => setV("alert")}>アラート{alertCount > 0 ? ` (${alertCount})` : ""}</Btn>
           <Btn variant="primary" size="md" onClick={() => setShowNew(true)}><IcPlus /> 新規受注</Btn>
+          {v === "prod" && <Btn variant="primary" size="md" onClick={() => setShowAddProd(true)}><IcPlus /> 商品追加</Btn>}
         </div>
       </div>
 
@@ -96,6 +99,7 @@ export function InvView({ data, setData, confirmOrder }) {
             ) },
             { label: "発注点", render: r => <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{r.min}</span> },
             { label: "倉庫", key: "wh" },
+            { label: "", render: r => <Btn variant="danger" size="sm" onClick={e => { e.stopPropagation(); if(confirm(`「${r.name}」を削除しますか？`)) setData(p => ({...p, prods: p.prods.filter(x => x.id !== r.id)})); }}>削除</Btn> },
           ]} data={filteredProds} onRow={r => setSelProd(r)} />
           {filteredProds.length === 0 && search && (
             <div style={{ padding: 24, textAlign: "center", color: "var(--text-tertiary)", fontSize: 13 }}>「{search}」に一致する商品がありません</div>
@@ -113,7 +117,14 @@ export function InvView({ data, setData, confirmOrder }) {
             { label: "明細", render: r => <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{r.items.length}品目</span> },
             { label: "合計", render: r => <span style={{ fontWeight: 600 }}>{fmtY(r.total)}</span> },
             { label: "状態", render: r => <Badge variant={r.st === "confirmed" ? "success" : r.st === "shipped" ? "info" : "warning"}>{ORDS[r.st]}</Badge> },
-            { label: "操作", render: r => r.st === "pending" ? <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); confirmOrder(r.id); }}><IcZap /> 受注確定</Btn> : r.st === "confirmed" ? <span style={{ color: "#0F6E56", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 4 }}><IcChk /> 確定済</span> : <span style={{ color: A, fontSize: 12, display: "inline-flex", alignItems: "center", gap: 4 }}><IcChk /> 出荷済</span> },
+            { label: "操作", render: r => (
+              <div style={{ display: "flex", gap: 4 }}>
+                {r.st === "pending" && <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); confirmOrder(r.id); }}><IcZap /> 確定</Btn>}
+                {r.st === "confirmed" && <Btn variant="primary" size="sm" onClick={e => { e.stopPropagation(); setData(p => ({...p, ords: p.ords.map(o => o.id === r.id ? {...o, st: "shipped"} : o)})); }}>出荷</Btn>}
+                {r.st === "shipped" && <span style={{ color: A, fontSize: 12 }}><IcChk /> 出荷済</span>}
+                <Btn variant="danger" size="sm" onClick={e => { e.stopPropagation(); setData(p => ({...p, ords: p.ords.filter(o => o.id !== r.id)})); }}>削除</Btn>
+              </div>
+            ) },
           ]} data={data.ords} onRow={r => setSelOrd(selOrd?.id === r.id ? null : r)} />
 
           {/* Order detail expand */}
@@ -343,13 +354,39 @@ export function InvView({ data, setData, confirmOrder }) {
               {newItems.length > 1 && <Btn variant="ghost" size="sm" onClick={() => setNewItems(newItems.filter((_, j) => j !== i))} style={{ color: "#A32D2D" }}>×</Btn>}
             </div>
           ))}
-          <Btn variant="ghost" size="sm" onClick={() => setNewItems([...newItems, { pid: data.prods[0].id, qty: 1 }])}><IcPlus /> 商品を追加</Btn>
+          <Btn variant="ghost" size="sm" onClick={() => setNewItems([...newItems, { pid: data.prods.length ? data.prods[0].id : "", qty: 1 }])}><IcPlus /> 商品を追加</Btn>
           <div style={{ borderTop: "1px solid var(--border-light)", marginTop: 16, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 700 }}>合計: {fmtY(newTotal)}</div>
             <div style={{ display: "flex", gap: 8 }}>
               <Btn onClick={() => setShowNew(false)}>キャンセル</Btn>
-              <Btn variant="primary" onClick={() => { setData(p => ({ ...p, ords: [...p.ords, { id: uid("o"), cid: newCid, date: today(), st: "pending", items: newItems.map(it => { const pr = data.prods.find(x => x.id === it.pid); return { pid: it.pid, qty: it.qty, pr: pr ? pr.price : 0 }; }), total: newTotal }] })); setShowNew(false); setNewItems([{ pid: data.prods[0].id, qty: 1 }]); }}>受注登録</Btn>
+              <Btn variant="primary" onClick={() => { setData(p => ({ ...p, ords: [...p.ords, { id: uid("o"), cid: newCid, date: today(), st: "pending", items: newItems.map(it => { const pr = data.prods.find(x => x.id === it.pid); return { pid: it.pid, qty: it.qty, pr: pr ? pr.price : 0 }; }), total: newTotal }] })); setShowNew(false); setNewItems([{ pid: data.prods.length ? data.prods[0].id : "", qty: 1 }]); }}>受注登録</Btn>
             </div>
+          </div>
+        </Modal>
+      )}
+      {showAddProd && (
+        <Modal title="商品を追加" onClose={() => setShowAddProd(false)}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Fld label="商品名"><input value={newProd.name} onChange={e => setNewProd({...newProd, name: e.target.value})} placeholder="例: 高性能センサー" style={inputStyle} /></Fld>
+            <Fld label="SKU"><input value={newProd.sku} onChange={e => setNewProd({...newProd, sku: e.target.value})} placeholder="例: SK-001" style={inputStyle} /></Fld>
+            <Fld label="カテゴリ"><input value={newProd.cat} onChange={e => setNewProd({...newProd, cat: e.target.value})} placeholder="例: センサー" style={inputStyle} /></Fld>
+            <Fld label="倉庫">
+              <select value={newProd.wh} onChange={e => setNewProd({...newProd, wh: e.target.value})} style={inputStyle}>
+                <option value="東京">東京</option><option value="大阪">大阪</option>
+              </select>
+            </Fld>
+            <Fld label="販売価格"><input type="number" value={newProd.price} onChange={e => setNewProd({...newProd, price: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
+            <Fld label="原価"><input type="number" value={newProd.cost} onChange={e => setNewProd({...newProd, cost: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
+            <Fld label="在庫数"><input type="number" value={newProd.stk} onChange={e => setNewProd({...newProd, stk: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
+            <Fld label="発注点"><input type="number" value={newProd.min} onChange={e => setNewProd({...newProd, min: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <Btn onClick={() => setShowAddProd(false)}>キャンセル</Btn>
+            <Btn variant="primary" disabled={!newProd.name || !newProd.price} onClick={() => {
+              setData(p => ({...p, prods: [...p.prods, { id: uid("p"), name: newProd.name, sku: newProd.sku || uid("SK"), cat: newProd.cat || "未分類", price: Number(newProd.price), cost: Number(newProd.cost) || 0, stk: Number(newProd.stk) || 0, min: Number(newProd.min) || 5, wh: newProd.wh }]}));
+              setNewProd({ name: "", sku: "", cat: "", price: "", cost: "", stk: "", min: "", wh: "東京" });
+              setShowAddProd(false);
+            }}>登録</Btn>
           </div>
         </Modal>
       )}
@@ -415,7 +452,7 @@ export function AcctView({ data, setData }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
         <KPI label="売上高" value={fmtY(tS)} icon={<IcRcpt />} color="#0F6E56" trend="+15%" trendUp />
         <KPI label="営業利益" value={fmtY(operatingProfit)} icon={<IcCalc />} color={operatingProfit >= 0 ? "#0F6E56" : "#A32D2D"} />
-        <KPI label="自動仕訳" value={autoCount + "件"} sub={"全" + data.jrnl.length + "件中 (" + Math.round(autoCount / data.jrnl.length * 100) + "%)"} icon={<IcZap />} color={A} />
+        <KPI label="自動仕訳" value={autoCount + "件"} sub={"全" + data.jrnl.length + "件中 (" + (data.jrnl.length ? Math.round(autoCount / data.jrnl.length * 100) : 0) + "%)"} icon={<IcZap />} color={A} />
         <KPI label="経費合計" value={fmtY(tE)} icon={<IcAlrt />} color="#BA7517" />
       </div>
 
@@ -433,6 +470,7 @@ export function AcctView({ data, setData }) {
             { label: "貸方科目", render: r => <span style={{ fontWeight: 500 }}>{r.cr.acc}</span> },
             { label: "貸方金額", render: r => fmtY(r.cr.amt) },
             { label: "連携元", render: r => r.ref ? <span style={{ fontSize: 11, color: A, display: "flex", alignItems: "center", gap: 4 }}><IcFlow /> {r.ref}</span> : <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>—</span> },
+            { label: "", render: r => !r.auto && setData ? <Btn variant="danger" size="sm" onClick={() => setData(p => ({...p, jrnl: p.jrnl.filter(j => j.id !== r.id)}))}>削除</Btn> : null },
           ]} data={data.jrnl} />
           <Card style={{ borderLeft: "3px solid " + A, padding: 14 }}>
             <div style={{ fontSize: 13, color: A, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}><IcZap /> 自動仕訳ルール</div>
@@ -663,12 +701,14 @@ export function AcctView({ data, setData }) {
   );
 }
 
-export function HRView({ data, role, confirmPayroll }) {
+export function HRView({ data, setData, role, confirmPayroll }) {
   const [v, setV] = useState("emp");
   const [clk, setClk] = useState(false);
   const [pd, setPd] = useState(false);
   const [bonusDone, setBonusDone] = useState(false);
   const [selEmp, setSelEmp] = useState(null);
+  const [showAddEmp, setShowAddEmp] = useState(false);
+  const [newEmp, setNewEmp] = useState({ name: "", dept: "営業部", sal: "", email: "" });
 
   const totalSal = data.emps.reduce((s, e) => s + e.sal, 0);
   const totalSocial = Math.round(totalSal * 0.15);
@@ -741,6 +781,7 @@ export function HRView({ data, role, confirmPayroll }) {
           {[["emp", "従業員一覧"], ["worklog", "ワークログ"], ["pay", "給与計算"], ["bonus", "賞与"], ["summary", "人件費分析"]].map(([k, l]) => (
             <Btn key={k} variant={v === k ? "primary" : "default"} size="md" onClick={() => setV(k)}>{l}</Btn>
           ))}
+          {v === "emp" && <Btn variant="primary" size="md" onClick={() => setShowAddEmp(true)}><IcPlus /> 従業員追加</Btn>}
         </div>
       </div>
 
@@ -748,8 +789,8 @@ export function HRView({ data, role, confirmPayroll }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
         <KPI label="従業員数" value={data.emps.length + "名"} icon={<IcPpl />} color={P} />
         <KPI label="人件費合計" value={fmtY(totalSal)} sub="月額" icon={<IcCalc />} color={A} />
-        <KPI label="平均給与" value={fmtY(Math.round(totalSal / data.emps.length))} icon={<IcRcpt />} color="#0F6E56" />
-        <KPI label="有給取得率" value={Math.round(data.emps.reduce((s, e) => s + e.ul, 0) / data.emps.reduce((s, e) => s + e.pl, 0) * 100) + "%"} icon={<IcClk />} color="#BA7517" />
+        <KPI label="平均給与" value={fmtY(data.emps.length ? Math.round(totalSal / data.emps.length) : 0)} icon={<IcRcpt />} color="#0F6E56" />
+        <KPI label="有給取得率" value={(data.emps.length ? Math.round(data.emps.reduce((s, e) => s + e.ul, 0) / (data.emps.reduce((s, e) => s + e.pl, 0) || 1) * 100) : 0) + "%"} icon={<IcClk />} color="#BA7517" />
       </div>
 
       {/* Employee List */}
@@ -769,6 +810,7 @@ export function HRView({ data, role, confirmPayroll }) {
               </div>;
             }},
             { label: "状態", render: () => <Badge variant="success">在籍</Badge> },
+            { label: "", render: r => setData ? <Btn variant="danger" size="sm" onClick={e => { e.stopPropagation(); if(confirm(`「${r.name}」を削除しますか？`)) setData(p => ({...p, emps: p.emps.filter(x => x.id !== r.id)})); }}>削除</Btn> : null },
           ]} data={data.emps} onRow={r => setSelEmp(selEmp?.id === r.id ? null : r)} />
 
           {selEmp && (
@@ -976,15 +1018,42 @@ export function HRView({ data, role, confirmPayroll }) {
           </Card>
         </>
       )}
+
+      {showAddEmp && (
+        <Modal title="従業員を追加" onClose={() => setShowAddEmp(false)}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Fld label="氏名"><input value={newEmp.name} onChange={e => setNewEmp({...newEmp, name: e.target.value})} placeholder="例: 田中 太郎" style={inputStyle} /></Fld>
+            <Fld label="部署">
+              <select value={newEmp.dept} onChange={e => setNewEmp({...newEmp, dept: e.target.value})} style={inputStyle}>
+                {[...new Set(data.emps.map(e => e.dept))].map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </Fld>
+            <Fld label="メールアドレス"><input value={newEmp.email} onChange={e => setNewEmp({...newEmp, email: e.target.value})} placeholder="例: tanaka@company.co.jp" style={inputStyle} /></Fld>
+            <Fld label="基本給"><input type="number" value={newEmp.sal} onChange={e => setNewEmp({...newEmp, sal: e.target.value})} placeholder="例: 300000" style={inputStyle} /></Fld>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <Btn onClick={() => setShowAddEmp(false)}>キャンセル</Btn>
+            <Btn variant="primary" disabled={!newEmp.name || !newEmp.sal} onClick={() => {
+              if (setData) {
+                setData(p => ({...p, emps: [...p.emps, { id: uid("e"), name: newEmp.name, dept: newEmp.dept, sal: Number(newEmp.sal), email: newEmp.email, pl: 20, ul: 0 }]}));
+              }
+              setNewEmp({ name: "", dept: "営業部", sal: "", email: "" });
+              setShowAddEmp(false);
+            }}>登録</Btn>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
 
-export function BillView({ data, registerPay }) {
+export function BillView({ data, setData, registerPay }) {
   const [v, setV] = useState("list");
   const [pt, setPt] = useState(null);
   const [selInv, setSelInv] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [showNewInv, setShowNewInv] = useState(false);
+  const [newInv, setNewInv] = useState({ cid: "", desc: "", amount: "" });
 
   const totalAmt = data.invs.reduce((s, i) => s + i.total, 0);
   const paidAmt = data.invs.reduce((s, i) => s + i.paid, 0);
@@ -1024,6 +1093,7 @@ export function BillView({ data, registerPay }) {
           <Btn variant={v === "list" ? "primary" : "default"} size="md" onClick={() => setV("list")}>請求一覧</Btn>
           <Btn variant={v === "aging" ? "primary" : "default"} size="md" onClick={() => setV("aging")}>売掛金分析</Btn>
           <Btn variant={v === "cust" ? "primary" : "default"} size="md" onClick={() => setV("cust")}>顧客別</Btn>
+          <Btn variant="primary" size="md" onClick={() => setShowNewInv(true)}><IcPlus /> 請求書作成</Btn>
         </div>
       </div>
 
@@ -1061,9 +1131,13 @@ export function BillView({ data, registerPay }) {
                 {r.st === "paid" ? "入金済" : overdue ? "期限超過" : r.st === "partial" ? "一部入金" : "送付済"}
               </Badge>;
             }},
-            { label: "操作", render: r => r.st !== "paid" ? (
-              <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); setPt(r); }}><IcZap /> 入金登録</Btn>
-            ) : <span style={{ color: "#0F6E56", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 4 }}><IcChk /> 完了</span> },
+            { label: "操作", render: r => (
+              <div style={{ display: "flex", gap: 4 }}>
+                {r.st !== "paid" && <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); setPt(r); }}>入金</Btn>}
+                {r.st === "paid" && <span style={{ color: "#0F6E56", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 4 }}><IcChk /> 完了</span>}
+                {setData && <Btn variant="danger" size="sm" onClick={e => { e.stopPropagation(); setData(p => ({...p, invs: p.invs.filter(x => x.id !== r.id)})); }}>削除</Btn>}
+              </div>
+            ) },
           ]} data={filteredInvs} onRow={r => setSelInv(selInv?.id === r.id ? null : r)} />
 
           {/* Invoice detail expand */}
@@ -1256,19 +1330,49 @@ export function BillView({ data, registerPay }) {
       )}
 
       {/* Payment Modal */}
-      {pt && (
-        <Modal title="入金登録" onClose={() => setPt(null)}>
-          <Fld label="顧客"><div style={{ fontWeight: 500, fontSize: 14 }}>{(data.custs.find(c => c.id === pt.cid) || {}).name}</div></Fld>
-          <Fld label="請求書">{pt.id} — 請求額 {fmtY(pt.total)}</Fld>
-          {pt.paid > 0 && <Fld label="既入金額"><span style={{ color: "#0F6E56", fontWeight: 500 }}>{fmtY(pt.paid)}</span></Fld>}
-          <Fld label="未回収額"><span style={{ fontWeight: 600, color: "#A32D2D", fontSize: 16 }}>{fmtY(pt.total - pt.paid)}</span></Fld>
-          <Card style={{ background: A + "08", borderLeft: "3px solid " + A, marginTop: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: A, fontWeight: 500 }}><IcZap /> 入金登録時の自動処理</div>
-            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>入金登録 → 売掛金消込仕訳を自動生成（普通預金/売掛金）</div>
-          </Card>
+      {pt && (() => {
+        const remaining = pt.total - pt.paid;
+        return (
+          <Modal title="入金登録" onClose={() => setPt(null)}>
+            <Fld label="顧客"><div style={{ fontWeight: 500, fontSize: 14 }}>{(data.custs.find(c => c.id === pt.cid) || {}).name}</div></Fld>
+            <Fld label="請求書">{pt.id} — 請求額 {fmtY(pt.total)}</Fld>
+            {pt.paid > 0 && <Fld label="既入金額"><span style={{ color: "#0F6E56", fontWeight: 500 }}>{fmtY(pt.paid)}</span></Fld>}
+            <Fld label="未回収額"><span style={{ fontWeight: 600, color: "#A32D2D", fontSize: 16 }}>{fmtY(remaining)}</span></Fld>
+            <Fld label="入金額"><input type="number" id="pay-amount" defaultValue={remaining} style={inputStyle} /></Fld>
+            <Card style={{ background: A + "08", borderLeft: "3px solid " + A, marginTop: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: A, fontWeight: 500 }}><IcZap /> 入金登録時の自動処理</div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>入金登録 → 売掛金消込仕訳を自動生成（普通預金/売掛金）</div>
+            </Card>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+              <Btn onClick={() => setPt(null)}>キャンセル</Btn>
+              <Btn variant="success" onClick={() => { const amt = Number(document.getElementById("pay-amount").value) || remaining; registerPay(pt.id, Math.min(amt, remaining)); setPt(null); }}><IcZap /> 入金を登録</Btn>
+            </div>
+          </Modal>
+        );
+      })()}
+
+      {/* New Invoice Modal */}
+      {showNewInv && (
+        <Modal title="請求書を作成" onClose={() => setShowNewInv(false)}>
+          <Fld label="顧客">
+            <select value={newInv.cid} onChange={e => setNewInv({...newInv, cid: e.target.value})} style={inputStyle}>
+              <option value="">選択してください</option>
+              {data.custs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </Fld>
+          <Fld label="摘要"><input value={newInv.desc} onChange={e => setNewInv({...newInv, desc: e.target.value})} placeholder="例: 3月分コンサルティング費用" style={inputStyle} /></Fld>
+          <Fld label="金額"><input type="number" value={newInv.amount} onChange={e => setNewInv({...newInv, amount: e.target.value})} placeholder="例: 500000" style={inputStyle} /></Fld>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Btn onClick={() => setPt(null)}>キャンセル</Btn>
-            <Btn variant="success" onClick={() => { registerPay(pt.id, pt.total - pt.paid); setPt(null); }}><IcZap /> 全額入金を登録</Btn>
+            <Btn onClick={() => setShowNewInv(false)}>キャンセル</Btn>
+            <Btn variant="primary" disabled={!newInv.cid || !newInv.amount} onClick={() => {
+              if (setData) {
+                const amt = Number(newInv.amount);
+                const due = (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10); })();
+                setData(p => ({...p, invs: [...p.invs, { id: uid("inv"), cid: newInv.cid, date: today(), due, total: amt, paid: 0, st: "sent", amt, desc: newInv.desc }]}));
+              }
+              setNewInv({ cid: "", desc: "", amount: "" });
+              setShowNewInv(false);
+            }}>請求書を発行</Btn>
           </div>
         </Modal>
       )}

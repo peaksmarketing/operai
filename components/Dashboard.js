@@ -165,7 +165,7 @@ export default function Dashboard({ data, role }) {
           </div>
           <Btn variant="primary" size="sm" onClick={() => router.push('/ai-chat')} style={{ background: A }}>AIチャットを開く →</Btn>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(90px,1fr))", gap: 8 }}>
           {[
             { label: "請求書OCR", path: "/ai-ocr" },
             { label: "メール生成", path: "/ai-mail" },
@@ -189,7 +189,7 @@ export default function Dashboard({ data, role }) {
         <KPI label="在庫アラート" value={lowStock.length + "件"} sub="要発注商品" icon={lowStock.length > 0 ? <IcAlrt /> : <IcBox />} color={lowStock.length > 0 ? "#A32D2D" : "#0F6E56"} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))", gap: 10 }}>
         {[
           { label: "請求書", value: data.invs.length + "件", sub: `未払い ${data.invs.filter(i => i.st !== "paid").length}件`, color: P },
           { label: "入金", value: data.invs.filter(i => i.st === "paid").length + "件", sub: `合計 ${fmtY(pR)}`, color: "#0F6E56" },
