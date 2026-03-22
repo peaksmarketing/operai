@@ -22,11 +22,12 @@ const features = [
 ];
 
 const faqs = [
-  { q: "導入にどのくらい時間がかかりますか？", a: "アカウント作成後、即日からご利用いただけます。既存データのCSV取込にも対応しているため、スムーズに移行できます。" },
+  { q: "導入の流れを教えてください", a: "お問い合わせ → ヒアリング → ご契約・ご入金 → 弊社にてアカウント（ID・パスワード）を発行 → メールにてお送りいたします。最短即日でご利用開始が可能です。" },
+  { q: "導入にどのくらい時間がかかりますか？", a: "アカウント発行後、即日からご利用いただけます。既存データのCSV取込にも対応しているため、スムーズに移行できます。" },
   { q: "ITの専門知識は必要ですか？", a: "必要ありません。Operaiは直感的な操作を前提に設計されており、Excelを使える方であれば問題なくお使いいただけます。" },
   { q: "データのセキュリティは大丈夫ですか？", a: "すべてのデータはSSL/TLS暗号化で保護されています。認証基盤にはSupabaseを採用し、エンタープライズレベルのセキュリティを実現しています。" },
   { q: "他のシステムとの連携は可能ですか？", a: "CSV取込による顧客データの一括登録に対応しています。今後、会計ソフトやCRMとのAPI連携も順次対応予定です。" },
-  { q: "無料トライアルはありますか？", a: "はい。デモアカウントで全機能をお試しいただけます。ログイン画面から「デモアカウントで試す」をクリックしてください。" },
+  { q: "デモ環境はありますか？", a: "導入をご検討のお客様には、デモ環境をご用意しております。まずはお問い合わせください。" },
   { q: "解約はいつでもできますか？", a: "はい、いつでも解約可能です。解約手数料はかかりません。月末までのご利用となります。" },
 ];
 
@@ -58,7 +59,7 @@ export default function TopPage() {
             <a href="#price">料金</a>
             <a href="#faq">よくある質問</a>
             <a href="/login" className={s.topNavLogin}>ログイン</a>
-            <a href="/login" className={s.topNavCTA}>無料で始める</a>
+            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topNavCTA}>お問い合わせ</a>
           </nav>
           <button className={s.topHamburger} onClick={() => setMobileOpen(true)}>
             <span /><span /><span />
@@ -74,7 +75,7 @@ export default function TopPage() {
         <a href="#price" onClick={() => setMobileOpen(false)}>料金</a>
         <a href="#faq" onClick={() => setMobileOpen(false)}>よくある質問</a>
         <a href="/login" style={{ color: P, fontWeight: 700 }}>ログイン</a>
-        <a href="/login" style={{ background: P, color: '#fff', padding: '12px 36px', borderRadius: 50 }}>無料で始める</a>
+        <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" style={{ background: P, color: '#fff', padding: '12px 36px', borderRadius: 50 }}>お問い合わせ</a>
       </div>
 
       {/* Hero */}
@@ -195,7 +196,7 @@ export default function TopPage() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <a href="/login" className={s.topPriceCTA}>無料で始める</a>
+            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topPriceCTA}>導入のお問い合わせ</a>
           </div>
         </div>
       </section>
@@ -238,8 +239,8 @@ export default function TopPage() {
         <h2>経営のすべてを、<br />AIが自動化</h2>
         <p>まずは無料でOperaiを体験してください</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          <a href="/login" className={s.topCTABtn}>デモを試す</a>
-          <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topCTABtnOutline}>お問い合わせ</a>
+          <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topCTABtn}>導入のお問い合わせ</a>
+          <a href="/login" className={s.topCTABtnOutline}>ログイン</a>
         </div>
       </section>
 

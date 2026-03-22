@@ -449,6 +449,77 @@ export default function CRMModule({ data, setData }) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {/* Status donut chart */}
+              <Card>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>ステータス分布</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32 }}>
+                  {(() => {
+                    const active = data.custs.filter(c => c.st === "active").length;
+                    const prospect = data.custs.filter(c => c.st === "prospect").length;
+                    const inactive = data.custs.filter(c => c.st === "inactive").length;
+                    const total = data.custs.length || 1;
+                    const slices = [
+                      { label: "アクティブ", count: active, color: "#0F6E56" },
+                      { label: "見込み", count: prospect, color: "#BA7517" },
+                      { label: "非アクティブ", count: inactive, color: "#A32D2D" },
+                    ].filter(s => s.count > 0);
+                    let cum = 0;
+                    const r = 60, cx = 70, cy = 70, ir = 38;
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+                        <svg width="140" height="140" viewBox="0 0 140 140">
+                          {slices.map((s, i) => {
+                            const pct = s.count / total;
+                            const startAngle = cum * 2 * Math.PI - Math.PI / 2;
+                            cum += pct;
+                            const endAngle = cum * 2 * Math.PI - Math.PI / 2;
+                            const large = pct > 0.5 ? 1 : 0;
+                            const x1 = cx + r * Math.cos(startAngle), y1 = cy + r * Math.sin(startAngle);
+                            const x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+                            const ix1 = cx + ir * Math.cos(startAngle), iy1 = cy + ir * Math.sin(startAngle);
+                            const ix2 = cx + ir * Math.cos(endAngle), iy2 = cy + ir * Math.sin(endAngle);
+                            const d = `M${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${large} 0 ${ix1},${iy1} Z`;
+                            return <path key={i} d={d} fill={s.color} opacity="0.85" />;
+                          })}
+                          <text x={cx} y={cy - 4} textAnchor="middle" style={{ fontSize: 18, fontWeight: 700, fill: "var(--text-primary)" }}>{total}</text>
+                          <text x={cx} y={cy + 12} textAnchor="middle" style={{ fontSize: 9, fill: "var(--text-tertiary)" }}>社</text>
+                        </svg>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {slices.map(s => (
+                            <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                              <div style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
+                              <span>{s.label}</span>
+                              <span style={{ fontWeight: 600, marginLeft: 4 }}>{s.count}社</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </Card>
+
+              {/* Industry bar chart */}
+              <Card>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>業種別分布</div>
+                <svg viewBox={`0 0 400 ${indEntries.length * 36 + 10}`} style={{ width: "100%", height: "auto" }}>
+                  {indEntries.map(([ind, count], i) => {
+                    const pct = count / indTotal;
+                    const color = indColors[i % indColors.length];
+                    const y = i * 36 + 5;
+                    return (
+                      <g key={ind}>
+                        <text x="70" y={y + 15} textAnchor="end" style={{ fontSize: 11, fill: "var(--text-secondary)" }}>{ind}</text>
+                        <rect x="80" y={y + 2} width={pct * 260} height="18" rx="3" fill={color} opacity="0.8" />
+                        <text x={80 + pct * 260 + 8} y={y + 15} style={{ fontSize: 11, fontWeight: 600, fill: "var(--text-primary)" }}>{count}社</text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </Card>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {/* Customer Revenue Ranking */}
               <Card>
                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>顧客別売上ランキング</div>

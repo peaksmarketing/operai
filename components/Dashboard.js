@@ -13,6 +13,9 @@ const ORDS = { pending: "未確認", confirmed: "確定", shipped: "出荷済" }
 
 function MiniChart({ data, color, labels }) {
   const [hover, setHover] = useState(null);
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setAnimated(true), 100); return () => clearTimeout(t); }, []);
+
   const max = Math.max(...data);
   const min = Math.min(...data);
   const w = 600, h = 140, px = 40, py = 10;
@@ -20,27 +23,36 @@ function MiniChart({ data, color, labels }) {
   const pts = data.map((v, i) => ({ x: px + (i / (data.length - 1)) * cw, y: py + ch - ((v - min) / (max - min || 1)) * ch, v }));
   const line = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x + "," + p.y).join(" ");
   const area = line + ` L${pts[pts.length - 1].x},${py + ch} L${pts[0].x},${py + ch} Z`;
+  const lineLen = pts.reduce((s, p, i) => i === 0 ? 0 : s + Math.sqrt((p.x - pts[i-1].x)**2 + (p.y - pts[i-1].y)**2), 0);
 
   return (
-    <svg viewBox={`0 0 ${w} ${h + 10}`} style={{ width: "100%", height: "auto" }}>
+    <svg viewBox={`0 0 ${w} ${h + 10}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
+      <style>{`
+        @keyframes drawLine { from { stroke-dashoffset: ${lineLen}; } to { stroke-dashoffset: 0; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 0.1; } }
+        @keyframes popIn { from { r: 0; } to { r: 3; } }
+      `}</style>
       {/* Grid lines */}
       {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
         const y = py + ch * (1 - r);
         const val = Math.round(min + (max - min) * r);
         return <g key={i}><line x1={px} y1={y} x2={w - px} y2={y} stroke="var(--border-light)" strokeWidth="0.5" /><text x={px - 6} y={y + 3} textAnchor="end" style={{ fontSize: 9, fill: "var(--text-tertiary)" }}>{val > 999 ? (val / 10000).toFixed(0) + "万" : val}</text></g>;
       })}
-      {/* Area fill */}
-      <path d={area} fill={color} opacity="0.08" />
-      {/* Line */}
-      <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {/* Data points + labels */}
+      {/* Area fill with animation */}
+      <path d={area} fill={color} style={{ opacity: animated ? 0.1 : 0, transition: "opacity 1.5s ease 0.8s" }} />
+      {/* Line with draw animation */}
+      <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        strokeDasharray={lineLen} strokeDashoffset={animated ? 0 : lineLen}
+        style={{ transition: `stroke-dashoffset 1.5s ease` }} />
+      {/* Data points with staggered animation */}
       {pts.map((p, i) => (
         <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: "pointer" }}>
-          <circle cx={p.x} cy={p.y} r={hover === i ? 5 : 3} fill={color} stroke="#fff" strokeWidth="2" style={{ transition: "r 0.15s" }} />
+          <circle cx={p.x} cy={p.y} r={animated ? (hover === i ? 5 : 3) : 0} fill={color} stroke="#fff" strokeWidth="2"
+            style={{ transition: `r 0.3s ease ${0.1 * i + 0.8}s, r 0.15s` }} />
           {hover === i && (
             <g>
-              <rect x={p.x - 28} y={p.y - 24} width="56" height="18" rx="4" fill={color} />
-              <text x={p.x} y={p.y - 12} textAnchor="middle" style={{ fontSize: 10, fill: "#fff", fontWeight: 600 }}>{fmtY(p.v * 10000)}</text>
+              <rect x={p.x - 32} y={p.y - 26} width="64" height="20" rx="4" fill={color} opacity="0.95" />
+              <text x={p.x} y={p.y - 13} textAnchor="middle" style={{ fontSize: 10, fill: "#fff", fontWeight: 600 }}>{fmtY(p.v * 10000)}</text>
             </g>
           )}
           <text x={p.x} y={h + 6} textAnchor="middle" style={{ fontSize: 9, fill: hover === i ? color : "var(--text-tertiary)", fontWeight: hover === i ? 600 : 400 }}>{labels ? labels[i] : ""}</text>
@@ -52,15 +64,22 @@ function MiniChart({ data, color, labels }) {
 
 function RingChart({ value, max, color, label }) {
   const [animPct, setAnimPct] = useState(0);
+  const [displayPct, setDisplayPct] = useState(0);
   const pct = max ? Math.round((value / max) * 100) : 0;
-  useState(() => { setTimeout(() => setAnimPct(pct), 100); });
+  useEffect(() => { const t = setTimeout(() => setAnimPct(pct), 200); return () => clearTimeout(t); }, [pct]);
+  useEffect(() => {
+    if (displayPct < animPct) {
+      const t = setTimeout(() => setDisplayPct(prev => Math.min(prev + 1, animPct)), 15);
+      return () => clearTimeout(t);
+    }
+  }, [displayPct, animPct]);
   const r = 40, circ = 2 * Math.PI * r, offset = circ - (circ * animPct) / 100;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <svg width="100" height="100" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r={r} fill="none" stroke="var(--border-light)" strokeWidth="8" />
         <circle cx="50" cy="50" r={r} fill="none" stroke={color || P} strokeWidth="8" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition: "stroke-dashoffset 1s ease-out" }} />
-        <text x="50" y="46" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 22, fontWeight: 700, fill: "var(--text-primary)" }}>{pct}%</text>
+        <text x="50" y="46" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 22, fontWeight: 700, fill: "var(--text-primary)" }}>{displayPct}%</text>
         <text x="50" y="62" textAnchor="middle" style={{ fontSize: 10, fill: "var(--text-tertiary)" }}>{label}</text>
       </svg>
     </div>
