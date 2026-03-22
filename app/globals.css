@@ -29,6 +29,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 button, input, select, textarea { font-family: var(--font); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(43, 104, 118, 0.1) !important;
+}
 
 @keyframes slideIn {
   from { transform: translateX(100px); opacity: 0; }

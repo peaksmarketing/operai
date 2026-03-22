@@ -49,7 +49,6 @@ const MENU_COMPANY = [
   { id: "_label_ai", label: "AI機能" },
   { id: "ai", path: "/ai", l: "AI経営参謀", Ic: IcAi, accent: true },
   { id: "ai-chat", path: "/ai-chat", l: "AIチャット", Ic: IcChat, accent: true },
-  { id: "ai-ocr", path: "/ai-ocr", l: "AI請求書OCR", Ic: IcScan, accent: true },
   { id: "ai-mail", path: "/ai-mail", l: "AIメール生成", Ic: IcMail, accent: true },
   { id: "ai-minutes", path: "/ai-minutes", l: "AI議事録", Ic: IcMic, accent: true },
   { id: "ai-report", path: "/ai-report", l: "AI日報・週報", Ic: IcFile, accent: true },
@@ -144,7 +143,7 @@ export default function AppShell({ children }) {
       {mobileMenuOpen && <div onClick={() => setMobileMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 999 }} />}
 
       {/* Sidebar */}
-      <div className="app-sidebar" style={{ width: col ? 60 : 220, background: P, display: "flex", flexDirection: "column", transition: "width 0.2s, transform 0.2s", flexShrink: 0, overflow: "hidden", position: "relative", zIndex: 1000 }}>
+      <div className="app-sidebar" style={{ width: col ? 60 : 220, background: `linear-gradient(180deg, ${P}, #1e4f5a)`, display: "flex", flexDirection: "column", transition: "width 0.2s, transform 0.2s", flexShrink: 0, overflow: "hidden", position: "relative", zIndex: 1000 }}>
         <style>{`
           @media (max-width: 768px) {
             .app-sidebar { position: fixed !important; top: 0; bottom: 0; left: 0; transform: translateX(${mobileMenuOpen ? '0' : '-100%'}) !important; width: 220px !important; z-index: 1001 !important; }
@@ -171,9 +170,9 @@ export default function AppShell({ children }) {
             const isActive = pathname.startsWith(m.path);
             return (
               <div key={m.id} onClick={() => { router.push(m.path); setMobileMenuOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "8px 14px" : "7px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.15)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.9)" : "rgba(255,255,255,0.65)", fontWeight: isActive ? 600 : m.accent ? 500 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.1s" }}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: col ? "8px 14px" : "8px 12px", borderRadius: 8, cursor: "pointer", background: isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.12)" : "transparent", color: isActive ? "#fff" : m.accent ? "rgba(200,190,255,0.9)" : "rgba(255,255,255,0.65)", fontWeight: isActive ? 600 : m.accent ? 500 : 400, fontSize: 13, whiteSpace: "nowrap", transition: "all 0.15s", borderLeft: isActive ? "3px solid #fff" : "3px solid transparent", marginLeft: -3 }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = m.accent ? "rgba(83,74,183,0.25)" : "rgba(255,255,255,0.08)"; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.15)" : "transparent"; }}>
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(255,255,255,0.15)" : m.accent ? "rgba(83,74,183,0.12)" : "transparent"; }}>
                 <span style={{ flexShrink: 0, display: "flex" }}><MIcon /></span>
                 {!col && <span>{m.l}</span>}
               </div>
@@ -199,7 +198,7 @@ export default function AppShell({ children }) {
             <div className="app-mobile-toggle" onClick={() => setMobileMenuOpen(true)} style={{ display: "none", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 6, cursor: "pointer", background: "var(--bg-secondary)" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </div>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>{currentPage?.l || ""}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", letterSpacing: -0.3 }}>{currentPage?.l || ""}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {/* Notifications */}
@@ -210,7 +209,7 @@ export default function AppShell({ children }) {
                 onMouseLeave={e => { if (!nOpen) e.currentTarget.style.background = nOpen ? "var(--bg-secondary)" : "transparent"; }}>
                 <IcBell />
               </div>
-              {unread > 0 && <div style={{ position: "absolute", top: 2, right: 2, width: 16, height: 16, borderRadius: 8, background: "#A32D2D", color: "#fff", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, pointerEvents: "none" }}>{unread}</div>}
+              {unread > 0 && <div style={{ position: "absolute", top: 1, right: 1, width: 17, height: 17, borderRadius: 9, background: "linear-gradient(135deg, #d32f2f, #A32D2D)", color: "#fff", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, pointerEvents: "none", border: "2px solid var(--bg-primary)" }}>{unread}</div>}
               {nOpen && (
                 <div style={{ position: "absolute", top: 42, right: 0, width: 340, background: "var(--bg-primary)", border: "1px solid var(--border-light)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 100 }}>
                   <div style={{ padding: "10px 14px", fontSize: 13, fontWeight: 500, borderBottom: "1px solid var(--border-light)" }}>通知</div>
@@ -229,8 +228,8 @@ export default function AppShell({ children }) {
                 style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, cursor: "pointer", background: uMenuOpen ? "var(--bg-secondary)" : "transparent", transition: "background 0.1s" }}
                 onMouseEnter={e => { if (!uMenuOpen) e.currentTarget.style.background = "var(--bg-secondary)"; }}
                 onMouseLeave={e => { if (!uMenuOpen) e.currentTarget.style.background = uMenuOpen ? "var(--bg-secondary)" : "transparent"; }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: role === "company" ? P : A, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {role === "company" ? <IcBuilding /> : <IcPerson />}
+                <div style={{ width: 32, height: 32, borderRadius: 10, background: role === "company" ? `linear-gradient(135deg, ${P}, #1e4f5a)` : `linear-gradient(135deg, ${A}, #3d35a0)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: -0.5 }}>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : (role === "company" ? <IcBuilding /> : <IcPerson />)}
                 </div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 500 }}>{user?.name}</div>

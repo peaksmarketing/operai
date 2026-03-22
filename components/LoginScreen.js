@@ -22,7 +22,6 @@ export default function LoginScreen() {
   const [pass, setPass] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mode, setMode] = useState('login'); // login or signup
   const router = useRouter();
   const supabase = createClient();
 
@@ -30,16 +29,6 @@ export default function LoginScreen() {
     if (!email || !pass) { setError('メールアドレスとパスワードを入力してください'); return; }
     setLoading(true);
     setError('');
-
-    if (mode === 'signup') {
-      const { error: err } = await supabase.auth.signUp({ email, password: pass });
-      if (err) { setError(err.message); setLoading(false); return; }
-      setError('');
-      alert('確認メールを送信しました。メール内のリンクをクリックしてアカウントを有効化してください。');
-      setMode('login');
-      setLoading(false);
-      return;
-    }
 
     const { error: err } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (err) { setError('メールアドレスまたはパスワードが正しくありません'); setLoading(false); return; }
@@ -139,10 +128,10 @@ export default function LoginScreen() {
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div style={{ marginBottom: 32 }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 8px', color: '#1a1a1a' }}>
-              {mode === 'signup' ? 'アカウント作成' : 'アカウントにログイン'}
+              アカウントにログイン
             </h2>
             <p style={{ fontSize: 14, color: '#999', margin: 0 }}>
-              {mode === 'signup' ? 'Operaiのアカウントを作成します' : 'Operaiで業務を開始しましょう'}
+              Operaiで業務を開始しましょう
             </p>
           </div>
 
@@ -168,15 +157,16 @@ export default function LoginScreen() {
 
             <button onClick={handleAuth} disabled={loading}
               style={{ width: '100%', padding: '13px 0', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', background: P, color: '#fff', opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s', marginTop: 4 }}>
-              {loading ? '処理中...' : mode === 'signup' ? 'アカウント作成' : 'ログイン'}
+              {loading ? '処理中...' : 'ログイン'}
             </button>
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
-              style={{ border: 'none', background: 'none', color: P, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>
-              {mode === 'signup' ? 'すでにアカウントをお持ちの方' : 'アカウントを新規作成'}
-            </button>
+            <span style={{ fontSize: 13, color: '#999' }}>アカウントをお持ちでない方は</span><br />
+            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener"
+              style={{ color: P, fontSize: 13, textDecoration: 'underline', marginTop: 4, display: 'inline-block' }}>
+              お問い合わせください
+            </a>
           </div>
 
           <p style={{ fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 24, lineHeight: 1.8 }}>

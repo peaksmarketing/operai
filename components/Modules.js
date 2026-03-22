@@ -371,9 +371,8 @@ export function InvView({ data, setData, confirmOrder }) {
             <Fld label="SKU"><input value={newProd.sku} onChange={e => setNewProd({...newProd, sku: e.target.value})} placeholder="例: SK-001" style={inputStyle} /></Fld>
             <Fld label="カテゴリ"><input value={newProd.cat} onChange={e => setNewProd({...newProd, cat: e.target.value})} placeholder="例: センサー" style={inputStyle} /></Fld>
             <Fld label="倉庫">
-              <select value={newProd.wh} onChange={e => setNewProd({...newProd, wh: e.target.value})} style={inputStyle}>
-                <option value="東京">東京</option><option value="大阪">大阪</option>
-              </select>
+              <input list="wh-list" value={newProd.wh} onChange={e => setNewProd({...newProd, wh: e.target.value})} placeholder="例: 東京本社" style={inputStyle} />
+              <datalist id="wh-list">{[...new Set(data.prods.map(p => p.wh))].map(w => <option key={w} value={w} />)}</datalist>
             </Fld>
             <Fld label="販売価格"><input type="number" value={newProd.price} onChange={e => setNewProd({...newProd, price: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
             <Fld label="原価"><input type="number" value={newProd.cost} onChange={e => setNewProd({...newProd, cost: e.target.value})} placeholder="0" style={inputStyle} /></Fld>
@@ -1063,8 +1062,9 @@ export function BillView({ data, setData, registerPay }) {
 
   const filteredInvs = data.invs.filter(i => {
     if (filter === "all") return true;
-    if (filter === "unpaid") return i.st !== "paid";
-    if (filter === "overdue") return i.st !== "paid" && i.due < today();
+    if (filter === "draft") return i.st === "draft";
+    if (filter === "unpaid") return i.st !== "paid" && i.st !== "draft";
+    if (filter === "overdue") return i.st !== "paid" && i.st !== "draft" && i.due < today();
     if (filter === "paid") return i.st === "paid";
     return true;
   });
@@ -1109,8 +1109,8 @@ export function BillView({ data, setData, registerPay }) {
       {v === "list" && (
         <>
           <div style={{ display: "flex", gap: 8 }}>
-            {[["all", "すべて"], ["unpaid", "未回収"], ["overdue", "期限超過"], ["paid", "入金済"]].map(([k, l]) => (
-              <Btn key={k} variant={filter === k ? "primary" : "default"} size="sm" onClick={() => setFilter(k)}>{l}{k === "unpaid" ? ` (${data.invs.filter(i => i.st !== "paid").length})` : k === "overdue" ? ` (${overdueCount})` : ""}</Btn>
+            {[["all", "すべて"], ["draft", "下書き"], ["unpaid", "未回収"], ["overdue", "期限超過"], ["paid", "入金済"]].map(([k, l]) => (
+              <Btn key={k} variant={filter === k ? "primary" : "default"} size="sm" onClick={() => setFilter(k)}>{l}{k === "draft" ? ` (${data.invs.filter(i => i.st === "draft").length})` : k === "unpaid" ? ` (${data.invs.filter(i => i.st !== "paid" && i.st !== "draft").length})` : k === "overdue" ? ` (${overdueCount})` : ""}</Btn>
             ))}
           </div>
           <Tbl cols={[
@@ -1126,14 +1126,15 @@ export function BillView({ data, setData, registerPay }) {
             { label: "税込合計", render: r => <span style={{ fontWeight: 600 }}>{fmtY(r.total)}</span> },
             { label: "入金額", render: r => <span style={{ fontWeight: 500, color: r.paid > 0 ? "#0F6E56" : "var(--text-tertiary)" }}>{fmtY(r.paid)}</span> },
             { label: "状態", render: r => {
-              const overdue = r.st !== "paid" && r.due < today();
-              return <Badge variant={r.st === "paid" ? "success" : overdue ? "danger" : r.st === "partial" ? "warning" : "info"}>
-                {r.st === "paid" ? "入金済" : overdue ? "期限超過" : r.st === "partial" ? "一部入金" : "送付済"}
+              const overdue = r.st !== "paid" && r.st !== "draft" && r.due < today();
+              return <Badge variant={r.st === "paid" ? "success" : r.st === "draft" ? "default" : overdue ? "danger" : r.st === "partial" ? "warning" : "info"}>
+                {r.st === "paid" ? "入金済" : r.st === "draft" ? "下書き" : overdue ? "期限超過" : r.st === "partial" ? "一部入金" : "請求中"}
               </Badge>;
             }},
             { label: "操作", render: r => (
               <div style={{ display: "flex", gap: 4 }}>
-                {r.st !== "paid" && <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); setPt(r); }}>入金</Btn>}
+                {r.st === "draft" && setData && <Btn variant="primary" size="sm" onClick={e => { e.stopPropagation(); setData(p => ({...p, invs: p.invs.map(x => x.id === r.id ? {...x, st: "sent"} : x)})); }}>請求確定</Btn>}
+                {(r.st === "sent" || r.st === "partial") && <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); setPt(r); }}>入金</Btn>}
                 {r.st === "paid" && <span style={{ color: "#0F6E56", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 4 }}><IcChk /> 完了</span>}
                 {setData && <Btn variant="danger" size="sm" onClick={e => { e.stopPropagation(); setData(p => ({...p, invs: p.invs.filter(x => x.id !== r.id)})); }}>削除</Btn>}
               </div>
@@ -1158,7 +1159,7 @@ export function BillView({ data, setData, registerPay }) {
                 </div>
                 <div style={{ fontSize: 13 }}>
                   <div style={{ color: "var(--text-tertiary)", marginBottom: 4 }}>状態</div>
-                  <Badge variant={selInv.st === "paid" ? "success" : "info"}>{selInv.st === "paid" ? "入金済" : "送付済"}</Badge>
+                  <Badge variant={selInv.st === "paid" ? "success" : selInv.st === "draft" ? "default" : "info"}>{selInv.st === "paid" ? "入金済" : selInv.st === "draft" ? "下書き" : "請求中"}</Badge>
                 </div>
               </div>
               {/* Invoice items from linked order */}
@@ -1315,7 +1316,7 @@ export function BillView({ data, setData, registerPay }) {
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ fontWeight: 600 }}>{fmtY(inv.total)}</span>
-                              <Badge variant={inv.st === "paid" ? "success" : "info"}>{inv.st === "paid" ? "入金済" : "送付済"}</Badge>
+                              <Badge variant={inv.st === "paid" ? "success" : inv.st === "draft" ? "default" : "info"}>{inv.st === "paid" ? "入金済" : inv.st === "draft" ? "下書き" : "請求中"}</Badge>
                             </div>
                           </div>
                         ))}
@@ -1367,8 +1368,10 @@ export function BillView({ data, setData, registerPay }) {
             <Btn variant="primary" disabled={!newInv.cid || !newInv.amount} onClick={() => {
               if (setData) {
                 const amt = Number(newInv.amount);
+                const tax = Math.round(amt * 0.1);
+                const total = amt + tax;
                 const due = (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10); })();
-                setData(p => ({...p, invs: [...p.invs, { id: uid("inv"), cid: newInv.cid, date: today(), due, total: amt, paid: 0, st: "sent", amt, desc: newInv.desc }]}));
+                setData(p => ({...p, invs: [...p.invs, { id: uid("inv"), cid: newInv.cid, date: today(), due, amt, tax, total, paid: 0, st: "draft", desc: newInv.desc }]}));
               }
               setNewInv({ cid: "", desc: "", amount: "" });
               setShowNewInv(false);

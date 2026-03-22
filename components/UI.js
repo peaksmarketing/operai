@@ -26,12 +26,13 @@ export function Card({ children, style, onClick }) {
       style={{
         background: "var(--bg-primary)", border: "1px solid var(--border-light)",
         borderRadius: 12, padding: 20,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
         cursor: onClick ? "pointer" : "default",
-        transition: "box-shadow 0.15s",
+        transition: "box-shadow 0.2s, transform 0.2s",
         ...(style || {}),
       }}
-      onMouseEnter={e => { if (onClick) e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.06)"; }}
-      onMouseLeave={e => { if (onClick) e.currentTarget.style.boxShadow = "none"; }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+      onMouseLeave={e => { if (onClick) { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)"; e.currentTarget.style.transform = "none"; } }}
     >
       {children}
     </div>
@@ -44,16 +45,16 @@ export function KPI({ label, value, sub, trend, trendUp, icon, color }) {
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 6, fontWeight: 500 }}>{label}</div>
-          <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: -0.5 }}>{value}</div>
+          <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginBottom: 6, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" }}>{label}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: -0.5, color: "var(--text-primary)" }}>{value}</div>
           {sub && <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{sub}</div>}
           {trend && (
-            <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 6, fontSize: 12, fontWeight: 500, color: trendUp ? "var(--success)" : "var(--danger)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 6, fontSize: 12, fontWeight: 600, color: trendUp ? "var(--success)" : "var(--danger)" }}>
               {trendUp ? "↑" : "↓"} {trend}
             </div>
           )}
         </div>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: c + "18", display: "flex", alignItems: "center", justifyContent: "center", color: c }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${c}20, ${c}10)`, border: `1px solid ${c}18`, display: "flex", alignItems: "center", justifyContent: "center", color: c }}>
           {icon}
         </div>
       </div>
@@ -66,12 +67,12 @@ export function Tbl({ cols, data, onRow }) {
     return <div style={{ padding: 24, textAlign: "center", color: "var(--text-tertiary)", fontSize: 13 }}>データなし</div>;
   }
   return (
-    <div style={{ overflowX: "auto", borderRadius: 10, border: "1px solid var(--border-light)" }}>
+    <div style={{ overflowX: "auto", borderRadius: 10, border: "1px solid var(--border-light)", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
         <thead>
           <tr>
             {cols.map((c, i) => (
-              <th key={i} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 500, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-light)" }}>
+              <th key={i} style={{ padding: "11px 14px", textAlign: "left", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11, background: "var(--bg-secondary)", borderBottom: "2px solid var(--border-light)", letterSpacing: 0.3, textTransform: "uppercase" }}>
                 {c.label}
               </th>
             ))}
@@ -82,12 +83,12 @@ export function Tbl({ cols, data, onRow }) {
             <tr
               key={i}
               onClick={() => { if (onRow) onRow(r); }}
-              style={{ borderBottom: "1px solid var(--border-light)", cursor: onRow ? "pointer" : "default", transition: "background 0.1s" }}
-              onMouseEnter={e => { if (onRow) e.currentTarget.style.background = "var(--bg-secondary)"; }}
-              onMouseLeave={e => { if (onRow) e.currentTarget.style.background = "transparent"; }}
+              style={{ borderBottom: "1px solid var(--border-light)", cursor: onRow ? "pointer" : "default", transition: "background 0.15s", background: i % 2 === 1 ? "var(--bg-secondary)" : "transparent" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#2b687808"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 1 ? "var(--bg-secondary)" : "transparent"; }}
             >
               {cols.map((c, j) => (
-                <td key={j} style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
+                <td key={j} style={{ padding: "11px 14px", whiteSpace: "nowrap" }}>
                   {c.render ? c.render(r) : r[c.key]}
                 </td>
               ))}
@@ -101,11 +102,11 @@ export function Tbl({ cols, data, onRow }) {
 
 export function Btn({ children, variant = "default", size = "md", onClick, style, disabled }) {
   const vs = {
-    default: { background: "var(--bg-secondary)", color: "var(--text-primary)" },
-    primary: { background: P, color: "#fff" },
-    success: { background: "var(--success)", color: "#fff" },
-    danger: { background: "var(--danger)", color: "#fff" },
-    ghost: { background: "transparent", color: "var(--text-secondary)" },
+    default: { background: "var(--bg-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-light)" },
+    primary: { background: `linear-gradient(135deg, ${P}, #1e4f5a)`, color: "#fff", border: "none" },
+    success: { background: "linear-gradient(135deg, #0F6E56, #0a5a46)", color: "#fff", border: "none" },
+    danger: { background: "linear-gradient(135deg, #A32D2D, #8a2424)", color: "#fff", border: "none" },
+    ghost: { background: "transparent", color: "var(--text-secondary)", border: "none" },
   };
   const szs = {
     sm: { padding: "5px 10px", fontSize: 12 },
@@ -117,13 +118,17 @@ export function Btn({ children, variant = "default", size = "md", onClick, style
       onClick={onClick}
       disabled={disabled}
       style={{
-        border: "none", borderRadius: 8, cursor: disabled ? "not-allowed" : "pointer",
+        borderRadius: 8, cursor: disabled ? "not-allowed" : "pointer",
         fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 6,
-        opacity: disabled ? 0.5 : 1, transition: "all 0.15s",
+        opacity: disabled ? 0.5 : 1, transition: "all 0.15s, transform 0.1s",
+        boxShadow: variant !== "ghost" && variant !== "default" ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
         ...(vs[variant] || vs.default),
         ...(szs[size] || szs.md),
         ...(style || {}),
       }}
+      onMouseDown={e => { if (!disabled) e.currentTarget.style.transform = "scale(0.97)"; }}
+      onMouseUp={e => { e.currentTarget.style.transform = "none"; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
     >
       {children}
     </button>
@@ -163,8 +168,9 @@ export function Fld({ label, children }) {
 }
 
 export const inputStyle = {
-  width: "100%", padding: "8px 12px",
+  width: "100%", padding: "9px 12px",
   border: "1px solid var(--border-light)", borderRadius: 8,
   fontSize: 14, background: "var(--bg-primary)", color: "var(--text-primary)",
   outline: "none", boxSizing: "border-box",
+  transition: "border-color 0.15s, box-shadow 0.15s",
 };

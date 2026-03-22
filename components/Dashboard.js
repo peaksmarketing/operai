@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge, Card, KPI, Tbl, PBar, Btn } from './UI';
 import { IcRcpt, IcUsers, IcChk, IcZap, IcClk, IcPpl, IcBox, IcAlrt, IcAi, IcCalc, IcFlow } from './Icons';
@@ -14,7 +14,15 @@ const ORDS = { pending: "未確認", confirmed: "確定", shipped: "出荷済" }
 function MiniChart({ data, color, labels }) {
   const [hover, setHover] = useState(null);
   const [animated, setAnimated] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setAnimated(true), 100); return () => clearTimeout(t); }, []);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setAnimated(true); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
 
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -26,7 +34,7 @@ function MiniChart({ data, color, labels }) {
   const lineLen = pts.reduce((s, p, i) => i === 0 ? 0 : s + Math.sqrt((p.x - pts[i-1].x)**2 + (p.y - pts[i-1].y)**2), 0);
 
   return (
-    <svg viewBox={`0 0 ${w} ${h + 10}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
+    <svg ref={ref} viewBox={`0 0 ${w} ${h + 10}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
       <style>{`
         @keyframes drawLine { from { stroke-dashoffset: ${lineLen}; } to { stroke-dashoffset: 0; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 0.1; } }
@@ -65,8 +73,18 @@ function MiniChart({ data, color, labels }) {
 function RingChart({ value, max, color, label }) {
   const [animPct, setAnimPct] = useState(0);
   const [displayPct, setDisplayPct] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
   const pct = max ? Math.round((value / max) * 100) : 0;
-  useEffect(() => { const t = setTimeout(() => setAnimPct(pct), 200); return () => clearTimeout(t); }, [pct]);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  useEffect(() => { if (visible) { const t = setTimeout(() => setAnimPct(pct), 200); return () => clearTimeout(t); } }, [visible, pct]);
   useEffect(() => {
     if (displayPct < animPct) {
       const t = setTimeout(() => setDisplayPct(prev => Math.min(prev + 1, animPct)), 15);
@@ -75,7 +93,7 @@ function RingChart({ value, max, color, label }) {
   }, [displayPct, animPct]);
   const r = 40, circ = 2 * Math.PI * r, offset = circ - (circ * animPct) / 100;
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+    <div ref={ref} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <svg width="100" height="100" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r={r} fill="none" stroke="var(--border-light)" strokeWidth="8" />
         <circle cx="50" cy="50" r={r} fill="none" stroke={color || P} strokeWidth="8" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition: "stroke-dashoffset 1s ease-out" }} />
@@ -186,7 +204,6 @@ export default function Dashboard({ data, role }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(90px,1fr))", gap: 8 }}>
           {[
-            { label: "請求書OCR", path: "/ai-ocr" },
             { label: "メール生成", path: "/ai-mail" },
             { label: "議事録要約", path: "/ai-minutes" },
             { label: "売上予測", path: "/ai-report" },
