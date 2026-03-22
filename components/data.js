@@ -1,0 +1,68 @@
+export const DATA = {
+  company: { name: "デモ株式会社", plan: "pro", created: "2024-01-15" },
+  emps: [
+    { id: "e1", name: "田中 太郎", dept: "営業部", role: "営業部長", sal: 450000, pl: 15, ul: 3, hired: "2022-04-01", email: "tanaka@demo.co.jp", status: "active" },
+    { id: "e2", name: "佐藤 花子", dept: "経理部", role: "経理主任", sal: 380000, pl: 18, ul: 5, hired: "2021-06-15", email: "sato@demo.co.jp", status: "active" },
+    { id: "e3", name: "鈴木 一郎", dept: "営業部", role: "営業担当", sal: 320000, pl: 12, ul: 2, hired: "2023-01-10", email: "suzuki@demo.co.jp", status: "active" },
+    { id: "e4", name: "山田 美咲", dept: "物流部", role: "倉庫管理", sal: 300000, pl: 10, ul: 1, hired: "2023-07-01", email: "yamada@demo.co.jp", status: "active" },
+  ],
+  custs: [
+    { id: "c1", name: "ABC商事", ct: "山本健一", em: "y@abc.co.jp", ind: "製造業", rev: 50000000, score: 85, st: "active" },
+    { id: "c2", name: "XYZテクノロジー", ct: "伊藤直美", em: "i@xyz.co.jp", ind: "IT", rev: 30000000, score: 72, st: "active" },
+    { id: "c3", name: "グローバル物産", ct: "中村誠", em: "n@g.co.jp", ind: "商社", rev: 80000000, score: 91, st: "active" },
+    { id: "c4", name: "サンライズ工業", ct: "小林恵", em: "k@sr.co.jp", ind: "製造", rev: 25000000, score: 58, st: "prospect" },
+  ],
+  deals: [
+    { id: "d1", cid: "c1", title: "製造ライン自動化", val: 12000000, stage: "proposal", prob: 70 },
+    { id: "d2", cid: "c2", title: "クラウド移行", val: 5000000, stage: "negotiation", prob: 85 },
+    { id: "d3", cid: "c3", title: "年間保守契約", val: 8000000, stage: "won", prob: 100 },
+    { id: "d4", cid: "c4", title: "品質管理システム", val: 3500000, stage: "qualification", prob: 40 },
+    { id: "d5", cid: "c1", title: "IoTセンサー追加", val: 4500000, stage: "proposal", prob: 60 },
+    { id: "d6", cid: "c2", title: "セキュリティ監査", val: 2000000, stage: "lead", prob: 20 },
+    { id: "d7", cid: "c3", title: "データ基盤構築", val: 15000000, stage: "processing", prob: 95 },
+    { id: "d8", cid: "c4", title: "社内研修パッケージ", val: 1500000, stage: "lead", prob: 15 },
+  ],
+  prods: [
+    { id: "p1", name: "コントローラ A100", sku: "AC-A100", cat: "制御", price: 150000, cost: 85000, stk: 45, min: 10, wh: "東京" },
+    { id: "p2", name: "センサー S200", sku: "SM-S200", cat: "センサー", price: 35000, cost: 18000, stk: 120, min: 30, wh: "東京" },
+    { id: "p3", name: "通信ユニット C300", sku: "CU-C300", cat: "通信", price: 80000, cost: 42000, stk: 8, min: 15, wh: "大阪" },
+    { id: "p4", name: "電源 P400", sku: "PM-P400", cat: "電源", price: 25000, cost: 12000, stk: 200, min: 50, wh: "東京" },
+    { id: "p5", name: "IoTゲートウェイ G500", sku: "IG-G500", cat: "IoT", price: 120000, cost: 65000, stk: 3, min: 10, wh: "大阪" },
+  ],
+  ords: [
+    { id: "o1", cid: "c1", date: "2025-03-10", st: "confirmed", items: [{ pid: "p1", qty: 5, pr: 150000 }, { pid: "p2", qty: 20, pr: 35000 }], total: 1450000 },
+    { id: "o2", cid: "c3", date: "2025-03-12", st: "shipped", items: [{ pid: "p4", qty: 50, pr: 25000 }], total: 1250000 },
+    { id: "o3", cid: "c2", date: "2025-03-14", st: "pending", items: [{ pid: "p5", qty: 2, pr: 120000 }, { pid: "p3", qty: 3, pr: 80000 }], total: 480000 },
+  ],
+  jrnl: [
+    { id: "j1", date: "2025-03-10", desc: "ABC商事 売上計上", dr: { acc: "売掛金", amt: 1450000 }, cr: { acc: "売上高", amt: 1450000 }, auto: true, ref: "i1" },
+    { id: "j2", date: "2025-03-12", desc: "グローバル物産 売上計上", dr: { acc: "売掛金", amt: 1250000 }, cr: { acc: "売上高", amt: 1250000 }, auto: true, ref: "i2" },
+    { id: "j3", date: "2025-03-05", desc: "事務用品購入", dr: { acc: "消耗品費", amt: 32000 }, cr: { acc: "現金", amt: 32000 }, auto: false, ref: null },
+    { id: "j4", date: "2025-03-01", desc: "オフィス家賃", dr: { acc: "地代家賃", amt: 350000 }, cr: { acc: "普通預金", amt: 350000 }, auto: false, ref: null },
+    { id: "j5", date: "2025-03-13", desc: "グローバル物産 入金消込", dr: { acc: "普通預金", amt: 1375000 }, cr: { acc: "売掛金", amt: 1375000 }, auto: true, ref: "pay" },
+  ],
+  invs: [
+    { id: "i1", oid: "o1", cid: "c1", date: "2025-03-10", due: "2025-04-10", amt: 1450000, tax: 145000, total: 1595000, st: "sent", paid: 0 },
+    { id: "i2", oid: "o2", cid: "c3", date: "2025-03-12", due: "2025-04-12", amt: 1250000, tax: 125000, total: 1375000, st: "paid", paid: 1375000 },
+  ],
+  alog: [
+    { id: "a1", ts: "03/10 09:15", trig: "受注確定", act: "請求書自動生成", det: "ABC商事 ¥1,595,000" },
+    { id: "a2", ts: "03/10 09:15", trig: "請求書発行", act: "売上仕訳自動生成", det: "売掛金/売上高 ¥1,450,000" },
+    { id: "a3", ts: "03/10 09:15", trig: "受注確定", act: "在庫自動引当", det: "A100×5, S200×20 出庫" },
+    { id: "a4", ts: "03/13 14:00", trig: "入金登録", act: "売掛金消込仕訳", det: "普通預金/売掛金 ¥1,375,000" },
+  ],
+  notifs: [
+    { id: "n1", msg: "IoTゲートウェイ G500 在庫低下（残3個）", type: "warning", read: false, date: "2025-03-15" },
+    { id: "n2", msg: "グローバル物産 入金確認・消込完了", type: "success", read: true, date: "2025-03-13" },
+  ],
+  activities: [
+    { id: "act-1", cid: "c1", date: "2025-03-14", type: "meeting", user: "田中 太郎", note: "製造ライン自動化の提案書を提出。先方技術部の反応良好、次回デモ予定。" },
+    { id: "act-2", cid: "c1", date: "2025-03-10", type: "call", user: "田中 太郎", note: "IoTセンサー追加導入について電話ヒアリング。予算承認待ちの状況。" },
+    { id: "act-3", cid: "c2", date: "2025-03-12", type: "email", user: "鈴木 一郎", note: "クラウド移行プロジェクトの見積書を送付。1週間以内に回答予定。" },
+    { id: "act-4", cid: "c3", date: "2025-03-08", type: "meeting", user: "田中 太郎", note: "年間保守契約の更新条件について打合せ。金額合意、契約書作成へ。" },
+    { id: "act-5", cid: "c2", date: "2025-03-05", type: "call", user: "鈴木 一郎", note: "初回ヒアリング。現行システムの課題を確認。移行スケジュール案を来週提示。" },
+    { id: "act-6", cid: "c4", date: "2025-02-20", type: "meeting", user: "鈴木 一郎", note: "初回商談。品質管理の課題をヒアリング。提案書作成へ。" },
+    { id: "act-7", cid: "c1", date: "2025-03-01", type: "email", user: "田中 太郎", note: "前回打合せ議事録と追加資料を送付。" },
+    { id: "act-8", cid: "c3", date: "2025-02-25", type: "call", user: "田中 太郎", note: "保守契約の更新時期について事前確認の電話。来月の打合せ日程を調整。" },
+  ],
+};
