@@ -27,18 +27,20 @@ export function DataProvider({ children }) {
   const prevDataRef = useRef(data);
   const companyIdRef = useRef(null);
 
+  const dbModeRef = useRef(false);
+
   // Wrapped setData that syncs to DB in background
   const setData = useCallback((updater) => {
     setDataRaw(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
       // Schedule DB sync in background (non-blocking)
-      if (dbMode || companyIdRef.current) {
+      if (companyIdRef.current) {
         setTimeout(() => syncToDB(prev, next, companyIdRef.current), 0);
       }
       prevDataRef.current = next;
       return next;
     });
-  }, [dbMode]);
+  }, []);
 
   const auto = useAuto(data, setData);
 
@@ -59,6 +61,7 @@ export function DataProvider({ children }) {
             setDataRaw(dbData);
             prevDataRef.current = dbData;
             setDbMode(true);
+            dbModeRef.current = true;
           }
         }
       } catch (e) {

@@ -468,7 +468,11 @@ export default function CRMModule({ data, setData }) {
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
                         <svg width="140" height="140" viewBox="0 0 140 140">
-                          {slices.map((s, i) => {
+                          {slices.length === 1 ? (
+                            <g>
+                              <circle cx={cx} cy={cy} r={r} fill="none" stroke={slices[0].color} strokeWidth={r - ir} opacity="0.85" />
+                            </g>
+                          ) : slices.map((s, i) => {
                             const pct = s.count / total;
                             const startAngle = cum * 2 * Math.PI - Math.PI / 2;
                             cum += pct;
