@@ -31,8 +31,8 @@ const faqs = [
 ];
 
 const reviews = [
-  { name: "株式会社A 様", text: "Excel管理から脱却したくてOperaiを導入しました。受注から請求書・仕訳が自動生成されるので、経理の二重入力がゼロに。月次決算が3日で終わるようになり、経営判断のスピードが格段に上がりました。" },
-  { name: "B商事 様", text: "以前は営業・在庫・経理がバラバラのシステムで、数字の突き合わせに毎月丸一日かかっていました。Operai導入後はすべてが一画面で見えるので、在庫切れや入金漏れにすぐ気づけるようになりました。" },
+  { name: "和菜七尾 様", text: "Excel管理から脱却したくてOperaiを導入しました。受注から請求書・仕訳が自動生成されるので、経理の二重入力がゼロに。月次決算が3日で終わるようになり、経営判断のスピードが格段に上がりました。" },
+  { name: "うしいち 様", text: "以前は営業・在庫・経理がバラバラのシステムで、数字の突き合わせに毎月丸一日かかっていました。Operai導入後はすべてが一画面で見えるので、在庫切れや入金漏れにすぐ気づけるようになりました。" },
 ];
 
 export default function TopPage() {
@@ -173,16 +173,25 @@ export default function TopPage() {
       <section id="price" className={s.topPricing}>
         <div className={s.topPricingInner}>
           <div className={s.topSectionTitle}><h2>料金</h2></div>
-          <div className={s.topSectionSub}>まずは使って実感してほしいから、<br />料金はシンプルかつ明瞭に。<br />導入しやすい価格で、経営の<br />効率化と自動化を実現できます。</div>
+          <div className={s.topSectionSub}>AIが営業・在庫・会計・人事のすべてを自動処理。<br />人がやっていた業務をAIが代行するから、<br />人件費の大幅削減と業務効率化を同時に実現します。</div>
           <div className={s.topPriceCard}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 16 }}>標準販売価格（税抜・サブスクリプション）</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 16 }}>標準販売価格（税別・サブスクリプション）</div>
             <div>
-              <span className={s.topPriceAmount}>270</span>
-              <span className={s.topPriceUnit}>万円 / 年</span>
+              <span className={s.topPriceAmount}>217,500</span>
+              <span className={s.topPriceUnit}>円 / 月</span>
             </div>
+            <div style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>1年間利用料：<span style={{ fontWeight: 700 }}>2,610,000円</span>（税別）</div>
             <div className={s.topPriceNote}>※初期費用はかかりません。</div>
+            <div style={{ margin: "20px 0", padding: "16px 20px", background: P + "08", borderRadius: 12, textAlign: "left" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: P, marginBottom: 8 }}>AIで人件費を削減</div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.8 }}>
+                受注処理・請求書発行・仕訳入力・在庫管理・給与計算・売上分析…<br />
+                これまで人手で行っていた業務をAIが24時間自動で処理します。<br />
+                <span style={{ fontWeight: 600, color: P }}>月1名分のコストで、複数業務を完全自動化。</span>
+              </div>
+            </div>
             <ul className={s.topPriceFeatures}>
-              {["全モジュール利用可能", "ユーザー数無制限", "AI成約予測・経営分析", "自動仕訳・請求書生成", "データ連携自動化", "メールサポート"].map(f => (
+              {["全モジュール利用可能（CRM・在庫・会計・人事・請求）", "AI経営参謀・売上予測・異常検知", "請求書OCR・メール自動生成・議事録AI", "受注→請求→仕訳→在庫引当の完全自動化", "ユーザー数無制限", "メールサポート"].map(f => (
                 <li key={f}>{f}</li>
               ))}
             </ul>
