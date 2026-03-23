@@ -97,7 +97,7 @@ export default function TopPage() {
             </div>
           </div>
           <div className={s.topHeroRight}>
-            <img src="/img/fv_img.png" alt="Operai" className={s.topHeroImg} />
+            <img src="/img/image_operai.jpg" alt="Operai ダッシュボード" className={s.topHeroImg} />
           </div>
         </div>
       </section>
@@ -105,9 +105,7 @@ export default function TopPage() {
       {/* About */}
       <section id="about" className={s.topAbout}>
         <div className={s.topAboutImg}>
-          <div className={s.topAboutImgPlaceholder}>
-            <span style={{ fontSize: 14, color: '#bbb' }}>イメージ画像</span>
-          </div>
+          <img src="/img/image_operai.jpg" alt="Operai プラットフォーム" style={{ width: "100%", borderRadius: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }} />
         </div>
         <div className={s.topAboutText}>
           <h2>Operaiとは？</h2>
@@ -163,8 +161,18 @@ export default function TopPage() {
           <div className={s.topSectionTitle}><h2>見やすく、使いやすく。<br />運用のすべてをこの画面で</h2></div>
           <div className={s.topSectionSub}>直感的なUIで、専任ITがいなくても即日運用可能</div>
           <div className={s.topScreenshotsGrid}>
-            {["ダッシュボード", "AI経営参謀", "営業・顧客管理", "在庫・物流", "会計・財務", "請求・入金管理"].map((label, i) => (
-              <div key={i} className={s.topScreenshotItem}>{label}</div>
+            {[
+              { label: "ダッシュボード", img: "/img/ss01.jpg" },
+              { label: "ダッシュボード（グラフ）", img: "/img/ss02.jpg" },
+              { label: "営業・顧客管理", img: "/img/ss03.jpg" },
+              { label: "在庫・物流", img: "/img/ss04.jpg" },
+              { label: "会計・財務", img: "/img/ss05.jpg" },
+              { label: "請求・入金管理", img: "/img/ss06.jpg" },
+            ].map((item, i) => (
+              <div key={i} className={s.topScreenshotItem}>
+                <img src={item.img} alt={item.label} style={{ width: "100%", borderRadius: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.1)", display: "block" }} />
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginTop: 10, textAlign: "center" }}>{item.label}</div>
+              </div>
             ))}
           </div>
         </div>
