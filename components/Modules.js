@@ -274,7 +274,7 @@ export function InvView({ data, setData, confirmOrder }) {
             </div>
           ) : (
             <Card style={{ textAlign: "center", padding: 40, color: "var(--text-tertiary)" }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>✓</div>
+              <div style={{ fontSize: 32, marginBottom: 8 }}></div>
               <div style={{ fontSize: 15, fontWeight: 500, color: "#0F6E56" }}>すべての商品が適正在庫です</div>
             </Card>
           )}
@@ -1119,7 +1119,7 @@ export function BillView({ data, setData, registerPay }) {
             { label: "発行日", key: "date" },
             { label: "支払期日", render: r => {
               const overdue = r.st !== "paid" && r.due < today();
-              return <span style={{ color: overdue ? "#A32D2D" : "inherit", fontWeight: overdue ? 600 : 400 }}>{r.due}{overdue ? " ⚠" : ""}</span>;
+              return <span style={{ color: overdue ? "#A32D2D" : "inherit", fontWeight: overdue ? 600 : 400 }}>{r.due}{overdue ? " " : ""}</span>;
             }},
             { label: "税抜", render: r => <span style={{ color: "var(--text-tertiary)" }}>{fmtY(r.amt)}</span> },
             { label: "消費税", render: r => <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>{fmtY(r.tax)}</span> },
@@ -1264,7 +1264,7 @@ export function BillView({ data, setData, registerPay }) {
                 { label: "操作", render: r => <Btn variant="success" size="sm" onClick={e => { e.stopPropagation(); setPt(r); }}><IcZap /> 入金登録</Btn> },
               ]} data={data.invs.filter(i => i.st !== "paid")} />
             ) : (
-              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}>✓ すべての請求が回収済みです</div>
+              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}> すべての請求が回収済みです</div>
             )}
           </Card>
         </>
@@ -1391,10 +1391,10 @@ export function AutoLogView({ data }) {
   const filtered = filter === "all" ? data.alog : data.alog.filter(l => l.trig === filter);
 
   const flows = [
-    { from: "受注確定", actions: ["請求書自動生成", "売上仕訳自動生成", "在庫自動引当・出庫"], color: P, icon: "📦" },
-    { from: "入金登録", actions: ["売掛金消込仕訳"], color: A, icon: "💰" },
-    { from: "給与確定", actions: ["給与仕訳自動生成", "社会保険仕訳自動生成"], color: "#854F0B", icon: "💼" },
-    { from: "請求書発行", actions: ["売上計上仕訳"], color: "#0F6E56", icon: "📄" },
+    { from: "受注確定", actions: ["請求書自動生成", "売上仕訳自動生成", "在庫自動引当・出庫"], color: P, icon: "[在庫]" },
+    { from: "入金登録", actions: ["売掛金消込仕訳"], color: A, icon: "[資金]" },
+    { from: "給与確定", actions: ["給与仕訳自動生成", "社会保険仕訳自動生成"], color: "#854F0B", icon: "" },
+    { from: "請求書発行", actions: ["売上計上仕訳"], color: "#0F6E56", icon: "" },
   ];
 
   // Stats
@@ -1595,7 +1595,7 @@ export function SettView({ data }) {
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>会社基本情報</h3>
-              <Btn variant="primary" size="sm" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}>{saved ? "✓ 保存しました" : "保存"}</Btn>
+              <Btn variant="primary" size="sm" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}>{saved ? " 保存しました" : "保存"}</Btn>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <Fld label="会社名"><input defaultValue={data.company.name} style={inputStyle} /></Fld>

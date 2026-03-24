@@ -596,7 +596,7 @@ export function AINotifyPage({ data }) {
         </div>
       ) : checked ? (
         <Card style={{ textAlign: "center", padding: 48 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: "#0F6E56" }}>✓ 緊急の通知はありません</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "#0F6E56" }}> 緊急の通知はありません</div>
         </Card>
       ) : (
         <Card style={{ textAlign: "center", padding: 48 }}>

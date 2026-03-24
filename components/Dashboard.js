@@ -176,7 +176,7 @@ export default function Dashboard({ data, role }) {
         <Card style={{ background: P + "06", border: "1px solid " + P + "20" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ fontSize: 16 }}>💡</div>
+              <div style={{ fontSize: 16 }}>[提案]</div>
               <div><div style={{ fontSize: 14, fontWeight: 600 }}>はじめに — Operaiの使い方</div><div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>6つのステップで業務を効率化しましょう</div></div>
             </div>
             <span onClick={() => setShowGuide(false)} style={{ fontSize: 12, color: "var(--text-tertiary)", cursor: "pointer", padding: "4px 8px" }}>閉じる ×</span>

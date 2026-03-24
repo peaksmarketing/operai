@@ -105,19 +105,19 @@ function analyzeCollection(data) {
 const AI_RESPONSES = {
   "売上": (data) => {
     const s = analyzeSales(data);
-    return `📊 **売上分析レポート**\n\n過去12ヶ月の平均月間売上は${s.avg}万円、直近3ヶ月のトレンドは${s.trend}万円で前年比${s.growth}%の成長です。\n\nAI予測では来月${s.forecast[0]}万円、2ヶ月後${s.forecast[1]}万円、3ヶ月後${s.forecast[2]}万円と見込んでいます（月次成長率 +${s.slope}万円）。\n\n💡 推奨アクション:\n• 成長トレンドを維持するため、パイプライン案件の早期クロージングを推進\n• 上位顧客への追加提案でLTV向上を図る`;
+    return `[分析] **売上分析レポート**\n\n過去12ヶ月の平均月間売上は${s.avg}万円、直近3ヶ月のトレンドは${s.trend}万円で前年比${s.growth}%の成長です。\n\nAI予測では来月${s.forecast[0]}万円、2ヶ月後${s.forecast[1]}万円、3ヶ月後${s.forecast[2]}万円と見込んでいます（月次成長率 +${s.slope}万円）。\n\n[提案] 推奨アクション:\n• 成長トレンドを維持するため、パイプライン案件の早期クロージングを推進\n• 上位顧客への追加提案でLTV向上を図る`;
   },
   "キャッシュ": (data) => {
     const cf = analyzeCashflow(data);
-    return `💰 **キャッシュフロー分析**\n\n現預金: ${fmtY(cf.cash)}\n売掛金残高: ${fmtY(cf.ar)}\n月次支出: ${fmtY(cf.monthlyBurn)}\n\n現在のバーンレートで約${cf.runway}ヶ月分の運転資金があります。回収率は${cf.collectionRate}%です。\n\n💡 推奨アクション:\n• 売掛金の早期回収を推進（特に期限超過の請求書）\n• 固定費の見直し（人件費率の最適化）`;
+    return `[資金] **キャッシュフロー分析**\n\n現預金: ${fmtY(cf.cash)}\n売掛金残高: ${fmtY(cf.ar)}\n月次支出: ${fmtY(cf.monthlyBurn)}\n\n現在のバーンレートで約${cf.runway}ヶ月分の運転資金があります。回収率は${cf.collectionRate}%です。\n\n[提案] 推奨アクション:\n• 売掛金の早期回収を推進（特に期限超過の請求書）\n• 固定費の見直し（人件費率の最適化）`;
   },
   "在庫": (data) => {
     const inv = analyzeInventory(data);
-    return `📦 **在庫分析レポート**\n\n総在庫原価: ${fmtY(inv.totalValue)}\n要発注アラート: ${inv.lowStock.length}件\n在庫回転率: ${inv.avgTurnover}回（業界平均: 3.5回）\n\n⚠ 要注意商品:\n${inv.lowStock.map(p => `• ${p.name}: 残${p.stk}個（発注点${p.min}個）`).join('\n')}\n\n💡 推奨アクション:\n• アラート商品の即時発注\n• 過剰在庫商品の販促キャンペーン検討`;
+    return `[在庫] **在庫分析レポート**\n\n総在庫原価: ${fmtY(inv.totalValue)}\n要発注アラート: ${inv.lowStock.length}件\n在庫回転率: ${inv.avgTurnover}回（業界平均: 3.5回）\n\n 要注意商品:\n${inv.lowStock.map(p => `• ${p.name}: 残${p.stk}個（発注点${p.min}個）`).join('\n')}\n\n[提案] 推奨アクション:\n• アラート商品の即時発注\n• 過剰在庫商品の販促キャンペーン検討`;
   },
   "仕訳": (data) => {
     const j = analyzeJournals(data);
-    return `📋 **仕訳異常検知レポート**\n\n総仕訳件数: ${j.totalEntries}件\n自動仕訳率: ${j.autoRate}%\n平均取引額: ${fmtY(j.avgAmt)}\n\n${j.anomalies.length > 0 ? `⚠ ${j.anomalies.length}件の注意項目を検出:\n${j.anomalies.map(a => `• ${a.date} ${a.desc}: ${a.reason}`).join('\n')}` : '✅ 異常な仕訳パターンは検出されませんでした。'}\n\n💡 推奨アクション:\n• 自動仕訳率のさらなる向上（現在${j.autoRate}% → 目標90%）\n• 手動仕訳のルール化で自動分類精度を改善`;
+    return `[仕訳] **仕訳異常検知レポート**\n\n総仕訳件数: ${j.totalEntries}件\n自動仕訳率: ${j.autoRate}%\n平均取引額: ${fmtY(j.avgAmt)}\n\n${j.anomalies.length > 0 ? ` ${j.anomalies.length}件の注意項目を検出:\n${j.anomalies.map(a => `• ${a.date} ${a.desc}: ${a.reason}`).join('\n')}` : ' 異常な仕訳パターンは検出されませんでした。'}\n\n[提案] 推奨アクション:\n• 自動仕訳率のさらなる向上（現在${j.autoRate}% → 目標90%）\n• 手動仕訳のルール化で自動分類精度を改善`;
   },
   "経営": (data) => {
     const s = analyzeSales(data);
@@ -125,12 +125,12 @@ const AI_RESPONSES = {
     const inv = analyzeInventory(data);
     const pipeline = data.deals.filter(d => d.stage !== "won" && d.stage !== "lost");
     const pipeVal = pipeline.reduce((a, d) => a + d.val, 0);
-    return `🏢 **AI経営診断レポート**\n\n【総合評価】B+ (良好)\n\n📊 売上: 月平均${s.avg}万円、成長率${s.growth}%\n💰 資金: 運転資金${cf.runway}ヶ月分、回収率${cf.collectionRate}%\n📦 在庫: ${inv.lowStock.length}件の要発注あり\n🤝 営業: パイプライン${fmtY(pipeVal)}（${pipeline.length}件）\n\n【強み】\n• 売上は安定した成長トレンド\n• 自動連携による業務効率化が進行中\n\n【改善点】\n• 売掛金の回収サイクル短縮\n• 在庫管理の精度向上（低在庫アラート対応）\n• パイプラインの成約率向上\n\n💡 今月の推奨アクション:\n1. 期限超過の請求書フォローアップ\n2. 上位案件3件の早期クロージング\n3. 低在庫商品の緊急発注`;
+    return `[経営] **AI経営診断レポート**\n\n【総合評価】B+ (良好)\n\n[分析] 売上: 月平均${s.avg}万円、成長率${s.growth}%\n[資金] 資金: 運転資金${cf.runway}ヶ月分、回収率${cf.collectionRate}%\n[在庫] 在庫: ${inv.lowStock.length}件の要発注あり\n[営業] 営業: パイプライン${fmtY(pipeVal)}（${pipeline.length}件）\n\n【強み】\n• 売上は安定した成長トレンド\n• 自動連携による業務効率化が進行中\n\n【改善点】\n• 売掛金の回収サイクル短縮\n• 在庫管理の精度向上（低在庫アラート対応）\n• パイプラインの成約率向上\n\n[提案] 今月の推奨アクション:\n1. 期限超過の請求書フォローアップ\n2. 上位案件3件の早期クロージング\n3. 低在庫商品の緊急発注`;
   },
   "回収": (data) => {
     const results = analyzeCollection(data);
-    if (results.length === 0) return "✅ すべての請求が回収済みです。未回収の請求書はありません。";
-    return `📊 **入金予測・回収リスク分析**\n\n未回収請求: ${results.length}件\n\n${results.map(r => `• ${r.inv.id} (${r.cust?.name || '-'}): リスクスコア ${r.riskScore}点 [${r.risk === 'high' ? '🔴高' : r.risk === 'medium' ? '🟡中' : '🟢低'}]\n  未回収額: ${fmtY(r.inv.total - r.inv.paid)} / 予測入金: ${r.predictedDays}日後`).join('\n')}\n\n💡 推奨アクション:\n• 高リスク案件は即時電話フォロー\n• 中リスク案件はリマインドメール送信`;
+    if (results.length === 0) return " すべての請求が回収済みです。未回収の請求書はありません。";
+    return `[分析] **入金予測・回収リスク分析**\n\n未回収請求: ${results.length}件\n\n${results.map(r => `• ${r.inv.id} (${r.cust?.name || '-'}): リスクスコア ${r.riskScore}点 [${r.risk === 'high' ? '高' : r.risk === 'medium' ? '中' : '低'}]\n  未回収額: ${fmtY(r.inv.total - r.inv.paid)} / 予測入金: ${r.predictedDays}日後`).join('\n')}\n\n[提案] 推奨アクション:\n• 高リスク案件は即時電話フォロー\n• 中リスク案件はリマインドメール送信`;
   },
 };
 
@@ -347,7 +347,7 @@ export default function AIAdvisor({ data }) {
                 { label: "重要度", render: r => <Badge variant={r.severity === "warning" ? "warning" : "info"}>{r.severity === "warning" ? "注意" : "情報"}</Badge> },
               ]} data={jrnl.anomalies} />
             ) : (
-              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}>✓ 異常な仕訳パターンは検出されませんでした</div>
+              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}> 異常な仕訳パターンは検出されませんでした</div>
             )}
           </Card>
           <Card style={{ borderLeft: "3px solid " + A, background: A + "06" }}>
@@ -385,7 +385,7 @@ export default function AIAdvisor({ data }) {
                   <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>残{r.stk}個 → 推奨{r.optimalStock}個まで補充</div>
                 </div>
               ))}
-              {inv.recommendations.filter(r => r.action === "urgent").length === 0 && <div style={{ fontSize: 13, color: "#0F6E56" }}>✓ 緊急発注の必要な商品はありません</div>}
+              {inv.recommendations.filter(r => r.action === "urgent").length === 0 && <div style={{ fontSize: 13, color: "#0F6E56" }}> 緊急発注の必要な商品はありません</div>}
             </Card>
             <Card style={{ borderLeft: "3px solid " + A, background: A + "06" }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: A, display: "flex", alignItems: "center", gap: 6 }}><IcAi /> 在庫最適化AI</div>
@@ -421,7 +421,7 @@ export default function AIAdvisor({ data }) {
                 { label: "推奨", render: r => <Badge variant={r.risk === "high" ? "danger" : r.risk === "medium" ? "warning" : "success"}>{r.risk === "high" ? "即時電話" : r.risk === "medium" ? "メール" : "待機"}</Badge> },
               ]} data={collection} />
             ) : (
-              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}>✓ すべての請求が回収済みです</div>
+              <div style={{ padding: 24, textAlign: "center", color: "#0F6E56", fontSize: 14, fontWeight: 500 }}> すべての請求が回収済みです</div>
             )}
           </Card>
           <Card style={{ borderLeft: "3px solid " + A, background: A + "06" }}>
