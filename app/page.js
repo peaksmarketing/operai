@@ -97,7 +97,7 @@ export default function TopPage() {
             </div>
           </div>
           <div className={s.topHeroRight}>
-            <img src="/img/image_operai.jpg" alt="Operai ダッシュボード" className={s.topHeroImg} />
+            <img src="/img/fv_img.png" alt="FV" className={s.topHeroImg} />
           </div>
         </div>
       </section>
@@ -105,7 +105,7 @@ export default function TopPage() {
       {/* About */}
       <section id="about" className={s.topAbout}>
         <div className={s.topAboutImg}>
-          <img src="/img/image_operai.jpg" alt="Operai プラットフォーム" style={{ width: "100%", borderRadius: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }} />
+          <img src="/img/image_operai.jpg" alt="Operai とは？" style={{ width: "100%" }} />
         </div>
         <div className={s.topAboutText}>
           <h2>Operaiとは？</h2>
