@@ -35,28 +35,37 @@ export default function LoginScreen() {
     router.push('/dashboard');
   };
 
+  const demoEmail = process.env.NEXT_PUBLIC_DEMO_EMAIL || 'demo@operai.app';
+  const demoPass = process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'demo1234';
+  const demoEnabled = process.env.NEXT_PUBLIC_DEMO_ENABLED !== 'false';
+
   const handleDemo = async () => {
+    if (!demoEnabled) { setError('デモモードは無効です'); return; }
     setLoading(true);
     setError('');
-    // Demo login with a pre-set demo account
     const { error: err } = await supabase.auth.signInWithPassword({
-      email: 'demo@operai.app',
-      password: 'demo1234',
+      email: demoEmail,
+      password: demoPass,
     });
     if (err) {
-      // If demo account doesn't exist, create it
-      const { error: signUpErr } = await supabase.auth.signUp({
-        email: 'demo@operai.app',
-        password: 'demo1234',
-        options: { data: { name: '管理者', role: 'company' } },
-      });
-      if (signUpErr) { setError('デモアカウントの作成に失敗しました'); setLoading(false); return; }
-      // Try login again
-      const { error: retryErr } = await supabase.auth.signInWithPassword({
-        email: 'demo@operai.app',
-        password: 'demo1234',
-      });
-      if (retryErr) { setError('デモログインに失敗しました。しばらくしてから再度お試しください。'); setLoading(false); return; }
+      // Only auto-create demo account if explicitly allowed
+      if (process.env.NEXT_PUBLIC_DEMO_AUTO_CREATE === 'true') {
+        const { error: signUpErr } = await supabase.auth.signUp({
+          email: demoEmail,
+          password: demoPass,
+          options: { data: { name: '管理者', role: 'company' } },
+        });
+        if (signUpErr) { setError('デモアカウントの作成に失敗しました'); setLoading(false); return; }
+        const { error: retryErr } = await supabase.auth.signInWithPassword({
+          email: demoEmail,
+          password: demoPass,
+        });
+        if (retryErr) { setError('デモログインに失敗しました。しばらくしてから再度お試しください。'); setLoading(false); return; }
+      } else {
+        setError('デモアカウントが見つかりません。管理者にお問い合わせください。');
+        setLoading(false);
+        return;
+      }
     }
     router.push('/dashboard');
   };

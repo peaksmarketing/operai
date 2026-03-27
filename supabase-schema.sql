@@ -286,6 +286,62 @@ CREATE INDEX idx_notifications_company ON notifications(company_id);
 CREATE INDEX idx_purchase_orders_company ON purchase_orders(company_id);
 
 -- =============================================
+-- RPC: 受注確定（トランザクション保護）
+-- =============================================
+CREATE OR REPLACE FUNCTION confirm_order(
+  p_order_id UUID,
+  p_company_id UUID,
+  p_customer_name TEXT,
+  p_tax_rate NUMERIC DEFAULT 0.1
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_order orders%ROWTYPE;
+  v_inv_id UUID;
+  v_total NUMERIC;
+  v_tax NUMERIC;
+  v_inv_total NUMERIC;
+  v_item RECORD;
+BEGIN
+  -- Lock and check order
+  SELECT * INTO v_order FROM orders WHERE id = p_order_id AND company_id = p_company_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RETURN json_build_object('error', 'Order not found');
+  END IF;
+  IF v_order.status IN ('confirmed', 'shipped') THEN
+    RETURN json_build_object('error', 'Order already confirmed');
+  END IF;
+
+  v_total := v_order.total;
+  v_tax := ROUND(v_total * p_tax_rate);
+  v_inv_total := v_total + v_tax;
+
+  -- Update order status
+  UPDATE orders SET status = 'confirmed' WHERE id = p_order_id;
+
+  -- Deduct inventory
+  FOR v_item IN SELECT oi.product_id, oi.quantity FROM order_items oi WHERE oi.order_id = p_order_id
+  LOOP
+    UPDATE products SET stock = GREATEST(0, stock - v_item.quantity) WHERE id = v_item.product_id;
+  END LOOP;
+
+  -- Create invoice
+  INSERT INTO invoices (company_id, order_id, customer_id, invoice_date, due_date, amount, tax, total, paid, status)
+  VALUES (p_company_id, p_order_id, v_order.customer_id, CURRENT_DATE, CURRENT_DATE + 30, v_total, v_tax, v_inv_total, 0, 'sent')
+  RETURNING id INTO v_inv_id;
+
+  -- Create journal entry
+  INSERT INTO journals (company_id, journal_date, description, debit_account, debit_amount, credit_account, credit_amount, is_auto, ref_type)
+  VALUES (p_company_id, CURRENT_DATE, p_customer_name || ' 売上計上', '売掛金', v_total, '売上高', v_total, true, 'invoice');
+
+  RETURN json_build_object('success', true, 'invoice_id', v_inv_id, 'inv_total', v_inv_total);
+END;
+$$;
+
+-- =============================================
 -- デモデータ投入
 -- =============================================
 

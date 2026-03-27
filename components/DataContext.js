@@ -24,10 +24,20 @@ export function DataProvider({ children }) {
   const [data, setDataRaw] = useState(DATA);
   const [dbMode, setDbMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [syncError, setSyncError] = useState(null);
+  const [syncing, setSyncing] = useState(false);
   const prevDataRef = useRef(data);
   const companyIdRef = useRef(null);
 
   const dbModeRef = useRef(false);
+
+  // Clear sync error after 5 seconds
+  useEffect(() => {
+    if (syncError) {
+      const t = setTimeout(() => setSyncError(null), 8000);
+      return () => clearTimeout(t);
+    }
+  }, [syncError]);
 
   // Wrapped setData that syncs to DB in background
   const setData = useCallback((updater) => {
@@ -35,7 +45,14 @@ export function DataProvider({ children }) {
       const next = typeof updater === 'function' ? updater(prev) : updater;
       // Schedule DB sync in background (non-blocking)
       if (companyIdRef.current) {
-        setTimeout(() => syncToDB(prev, next, companyIdRef.current), 0);
+        setSyncing(true);
+        syncToDB(prev, next, companyIdRef.current)
+          .then(() => setSyncing(false))
+          .catch(e => {
+            setSyncing(false);
+            setSyncError(e.message || 'データの保存に失敗しました');
+            console.error('DB sync failed:', e);
+          });
       }
       prevDataRef.current = next;
       return next;
@@ -74,7 +91,23 @@ export function DataProvider({ children }) {
   }, []);
 
   return (
-    <DataContext.Provider value={{ data, setData, dbMode, loading, ...auto }}>
+    <DataContext.Provider value={{ data, setData, dbMode, loading, syncing, syncError, setSyncError, ...auto }}>
+      {syncError && (
+        <div style={{
+          position: 'fixed', top: 16, right: 16, zIndex: 99999,
+          padding: '12px 20px', borderRadius: 10,
+          background: '#A32D2D', color: '#fff', fontSize: 13,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', gap: 10, maxWidth: 400,
+        }}>
+          <span style={{ fontWeight: 600 }}>保存エラー:</span>
+          <span>{syncError}</span>
+          <button onClick={() => setSyncError(null)} style={{
+            background: 'none', border: 'none', color: '#fff', cursor: 'pointer',
+            fontSize: 16, padding: '0 4px', opacity: 0.7,
+          }}>&times;</button>
+        </div>
+      )}
       {children}
     </DataContext.Provider>
   );
@@ -136,7 +169,8 @@ async function syncToDB(prev, next, companyId) {
     for (const n of notifDiff.added) await dbAddNotification(companyId, n);
 
   } catch (e) {
-    console.error('DB sync error (non-fatal):', e.message);
+    console.error('DB sync error:', e.message);
+    throw e; // Re-throw so the caller can handle it
   }
 }
 

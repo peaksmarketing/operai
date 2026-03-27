@@ -285,11 +285,16 @@ export default function CRMModule({ data, setData }) {
   const avgScore = Math.round(data.custs.reduce((s, c) => s + c.score, 0) / (totalCusts || 1));
 
   const handleAddCust = () => {
-    if (!newCust.name) return;
+    if (!newCust.name || !newCust.name.trim()) return;
+    // Email format validation (if provided)
+    if (newCust.em && newCust.em.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.em.trim())) {
+      alert('メールアドレスの形式が正しくありません');
+      return;
+    }
     const id = uid("c");
     setData(prev => ({
       ...prev,
-      custs: [...prev.custs, { ...newCust, id, rev: 0, score: 50, st: "prospect", notes: "" }],
+      custs: [...prev.custs, { ...newCust, name: newCust.name.trim(), id, rev: 0, score: 50, st: "prospect", notes: "" }],
     }));
     setNewCust({ name: "", ct: "", em: "", ind: "", phone: "" });
     setShowAdd(false);

@@ -382,7 +382,14 @@ export function InvView({ data, setData, confirmOrder }) {
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
             <Btn onClick={() => setShowAddProd(false)}>キャンセル</Btn>
             <Btn variant="primary" disabled={!newProd.name || !newProd.price} onClick={() => {
-              setData(p => ({...p, prods: [...p.prods, { id: uid("p"), name: newProd.name, sku: newProd.sku || uid("SK"), cat: newProd.cat || "未分類", price: Number(newProd.price), cost: Number(newProd.cost) || 0, stk: Number(newProd.stk) || 0, min: Number(newProd.min) || 5, wh: newProd.wh }]}));
+              const price = Number(newProd.price);
+              const cost = Number(newProd.cost) || 0;
+              const stk = Number(newProd.stk) || 0;
+              const min = Number(newProd.min) || 5;
+              if (isNaN(price) || price < 0) { alert('価格は0以上の数値を入力してください'); return; }
+              if (isNaN(cost) || cost < 0) { alert('原価は0以上の数値を入力してください'); return; }
+              if (isNaN(stk) || stk < 0) { alert('在庫数は0以上の数値を入力してください'); return; }
+              setData(p => ({...p, prods: [...p.prods, { id: uid("p"), name: newProd.name.trim(), sku: newProd.sku || uid("SK"), cat: newProd.cat || "未分類", price, cost, stk, min, wh: newProd.wh }]}));
               setNewProd({ name: "", sku: "", cat: "", price: "", cost: "", stk: "", min: "", wh: "東京" });
               setShowAddProd(false);
             }}>登録</Btn>
@@ -1033,8 +1040,11 @@ export function HRView({ data, setData, role, confirmPayroll }) {
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
             <Btn onClick={() => setShowAddEmp(false)}>キャンセル</Btn>
             <Btn variant="primary" disabled={!newEmp.name || !newEmp.sal} onClick={() => {
+              const sal = Number(newEmp.sal);
+              if (isNaN(sal) || sal <= 0) { alert('基本給は正の数値を入力してください'); return; }
+              if (newEmp.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmp.email.trim())) { alert('メールアドレスの形式が正しくありません'); return; }
               if (setData) {
-                setData(p => ({...p, emps: [...p.emps, { id: uid("e"), name: newEmp.name, dept: newEmp.dept, sal: Number(newEmp.sal), email: newEmp.email, pl: 20, ul: 0 }]}));
+                setData(p => ({...p, emps: [...p.emps, { id: uid("e"), name: newEmp.name.trim(), dept: newEmp.dept, sal, email: newEmp.email.trim(), pl: 20, ul: 0 }]}));
               }
               setNewEmp({ name: "", dept: "営業部", sal: "", email: "" });
               setShowAddEmp(false);

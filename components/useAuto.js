@@ -24,7 +24,7 @@ export function useAuto(data, setData) {
   const confirmOrder = useCallback((oid) => {
     setData(prev => {
       const ord = prev.ords.find(o => o.id === oid);
-      if (!ord || ord.st === "confirmed") return prev;
+      if (!ord || ord.st === "confirmed" || ord.st === "shipped") return prev;
       const cn = (prev.custs.find(c => c.id === ord.cid) || {}).name || "?";
       const tax = Math.round(ord.total * 0.1);
       const invT = ord.total + tax;

@@ -3,8 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../lib/supabase-browser';
 import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi, IcChat, IcScan, IcMail, IcMic, IcFile, IcNotif } from './Icons';
-import { DATA } from './data';
-import { useAuto } from './useAuto';
 
 const P = "#2b6876";
 const A = "#534AB7";
@@ -64,11 +62,8 @@ const MENU_EMPLOYEE = [
   { id: "inventory", path: "/inventory", l: "在庫・物流", Ic: IcBox },
 ];
 
-export function useAppData() {
-  const [data, setData] = useState(DATA);
-  const auto = useAuto(data, setData);
-  return { data, setData, ...auto };
-}
+// Re-export from DataContext for backward compatibility
+export { useAppData } from './DataContext';
 
 export default function AppShell({ children }) {
   const router = useRouter();
