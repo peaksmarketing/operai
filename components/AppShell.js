@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../lib/supabase-browser';
 import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi, IcChat, IcScan, IcMail, IcMic, IcFile, IcNotif } from './Icons';
+import { DATA } from './data';
 
 const P = "#2b6876";
 const A = "#534AB7";
