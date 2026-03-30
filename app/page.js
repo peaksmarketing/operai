@@ -186,10 +186,10 @@ export default function TopPage() {
           <div className={s.topPriceCard}>
             <div style={{ fontSize: 13, fontWeight: 600, color: P, marginBottom: 16 }}>標準販売価格（税別・サブスクリプション）</div>
             <div>
-              <span className={s.topPriceAmount}>217,500</span>
+              <span className={s.topPriceAmount}>222,000</span>
               <span className={s.topPriceUnit}>円 / 月</span>
             </div>
-            <div style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>1年間利用料：<span style={{ fontWeight: 700 }}>2,610,000円</span>（税別）</div>
+            <div style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>1年間利用料：<span style={{ fontWeight: 700 }}>2,664,000円</span>（税別）</div>
             <div className={s.topPriceNote}>※初期費用はかかりません。</div>
             <div style={{ margin: "20px 0", padding: "16px 20px", background: P + "08", borderRadius: 12, textAlign: "left" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: P, marginBottom: 8 }}>AIで人件費を削減</div>
