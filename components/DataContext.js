@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { DATA } from './data';
 import { useAuto } from './useAuto';
-import { loadAllData, dbAddCustomer, dbUpdateCustomer, dbDeleteCustomer, dbAddDeal, dbDeleteDeal, dbAddProduct, dbUpdateProduct, dbDeleteProduct, dbAddEmployee, dbDeleteEmployee, dbAddOrder, dbUpdateOrder, dbDeleteOrder, dbAddInvoice, dbUpdateInvoice, dbDeleteInvoice, dbAddJournal, dbDeleteJournal, dbAddActivity, dbAddAutomationLog, dbAddNotification, dbAddPurchaseOrder, dbUpdatePurchaseOrder } from '../lib/supabase-data';
+import { loadAllData, dbAddCustomer, dbUpdateCustomer, dbDeleteCustomer, dbAddDeal, dbDeleteDeal, dbAddProduct, dbUpdateProduct, dbDeleteProduct, dbAddEmployee, dbDeleteEmployee, dbAddOrder, dbUpdateOrder, dbDeleteOrder, dbAddInvoice, dbUpdateInvoice, dbDeleteInvoice, dbAddJournal, dbDeleteJournal, dbAddActivity, dbAddAutomationLog, dbAddNotification, dbAddPurchaseOrder, dbUpdatePurchaseOrder, dbAddPosSale, dbUpdatePosSale, dbDeletePosSale, dbAddPayable, dbUpdatePayable, dbDeletePayable } from '../lib/supabase-data';
 import { ensureUserSetup } from '../lib/supabase-setup';
 
 const DataContext = createContext(null);
@@ -163,6 +163,18 @@ async function syncToDB(prev, next, companyId) {
     // Automation logs
     const alogDiff = diffArrays(prev.alog || [], next.alog || []);
     for (const a of alogDiff.added) await dbAddAutomationLog(companyId, a);
+
+    // POS sales
+    const posDiff = diffArrays(prev.pos || [], next.pos || []);
+    for (const s of posDiff.added) await dbAddPosSale(companyId, s);
+    for (const s of posDiff.removed) await dbDeletePosSale(s.id);
+    for (const s of posDiff.updated) await dbUpdatePosSale(s.id, s);
+
+    // Payables
+    const apDiff = diffArrays(prev.payables || [], next.payables || []);
+    for (const p of apDiff.added) await dbAddPayable(companyId, p);
+    for (const p of apDiff.removed) await dbDeletePayable(p.id);
+    for (const p of apDiff.updated) await dbUpdatePayable(p.id, p);
 
     // Notifications
     const notifDiff = diffArrays(prev.notifs || [], next.notifs || []);

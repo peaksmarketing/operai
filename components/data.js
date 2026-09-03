@@ -55,6 +55,17 @@ export const DATA = {
     { id: "n1", msg: "IoTゲートウェイ G500 在庫低下（残3個）", type: "warning", read: false, date: "2025-03-15" },
     { id: "n2", msg: "グローバル物産 入金確認・消込完了", type: "success", read: true, date: "2025-03-13" },
   ],
+  pos: [
+    { id: "s1", date: "2025-03-14", ts: "03/14 10:22", items: [{ pid: "p2", name: "センサー S200", pr: 35000, qty: 2 }], sub: 70000, tax: 7000, total: 77000, method: "cash", received: 80000, change: 3000, st: "completed", settled: true, cid: null },
+    { id: "s2", date: "2025-03-14", ts: "03/14 13:05", items: [{ pid: "p4", name: "電源 P400", pr: 25000, qty: 3 }, { pid: "p2", name: "センサー S200", pr: 35000, qty: 1 }], sub: 110000, tax: 11000, total: 121000, method: "card", received: 121000, change: 0, st: "completed", settled: false, cid: "c4" },
+    { id: "s3", date: "2025-03-15", ts: "03/15 11:40", items: [{ pid: "p1", name: "コントローラ A100", pr: 150000, qty: 1 }], sub: 150000, tax: 15000, total: 165000, method: "qr", received: 165000, change: 0, st: "completed", settled: false, cid: null },
+  ],
+  payables: [
+    { id: "ap1", supplier: "テクノパーツ株式会社", date: "2025-02-20", due: "2025-03-20", amt: 680000, tax: 68000, total: 748000, paid: 0, st: "unpaid", desc: "部品仕入 2月分", cat: "仕入高" },
+    { id: "ap2", supplier: "グローバル電子部品", date: "2025-03-01", due: "2025-03-31", amt: 360000, tax: 36000, total: 396000, paid: 0, st: "unpaid", desc: "IoTゲートウェイ 3台", cat: "仕入高" },
+    { id: "ap3", supplier: "サンライズ物流", date: "2025-03-05", due: "2025-04-05", amt: 120000, tax: 12000, total: 132000, paid: 0, st: "unpaid", desc: "配送委託費 3月分", cat: "外注費" },
+    { id: "ap4", supplier: "テクノパーツ株式会社", date: "2025-01-20", due: "2025-02-20", amt: 500000, tax: 50000, total: 550000, paid: 550000, st: "paid", paidDate: "2025-02-19", desc: "部品仕入 1月分", cat: "仕入高" },
+  ],
   activities: [
     { id: "act-1", cid: "c1", date: "2025-03-14", type: "meeting", user: "田中 太郎", note: "製造ライン自動化の提案書を提出。先方技術部の反応良好、次回デモ予定。" },
     { id: "act-2", cid: "c1", date: "2025-03-10", type: "call", user: "田中 太郎", note: "IoTセンサー追加導入について電話ヒアリング。予算承認待ちの状況。" },

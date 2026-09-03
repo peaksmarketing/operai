@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../lib/supabase-browser';
-import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi, IcChat, IcScan, IcMail, IcMic, IcFile, IcNotif } from './Icons';
+import { IcDash, IcUsers, IcBox, IcCalc, IcPpl, IcRcpt, IcBell, IcClk, IcSet, IcOut, IcZap, IcFlow, IcX, IcAi, IcChat, IcScan, IcMail, IcMic, IcFile, IcNotif, IcPos, IcScale } from './Icons';
 import { DATA } from './data';
 
 const P = "#2b6876";
@@ -38,11 +38,13 @@ const MENU_COMPANY = [
   { id: "dashboard", path: "/dashboard", l: "ダッシュボード", Ic: IcDash },
   { id: "_label_sales", label: "営業・顧客管理" },
   { id: "crm", path: "/crm", l: "営業・顧客管理", Ic: IcUsers },
+  { id: "pos", path: "/pos", l: "POSレジ", Ic: IcPos },
   { id: "_label_inv", label: "在庫・物流" },
   { id: "inventory", path: "/inventory", l: "在庫・物流", Ic: IcBox },
   { id: "_label_acct", label: "会計・財務" },
   { id: "accounting", path: "/accounting", l: "会計・財務", Ic: IcCalc },
   { id: "billing", path: "/billing", l: "請求・入金管理", Ic: IcRcpt },
+  { id: "receivables", path: "/receivables", l: "債権債務管理", Ic: IcScale },
   { id: "_label_hr", label: "人事・労務" },
   { id: "hr", path: "/hr", l: "人事・労務", Ic: IcPpl },
   { id: "_label_ai", label: "AI機能" },
@@ -61,6 +63,7 @@ const MENU_EMPLOYEE = [
   { id: "hr", path: "/hr", l: "勤怠・給与", Ic: IcClk },
   { id: "crm", path: "/crm", l: "営業・顧客", Ic: IcUsers },
   { id: "inventory", path: "/inventory", l: "在庫・物流", Ic: IcBox },
+  { id: "pos", path: "/pos", l: "POSレジ", Ic: IcPos },
 ];
 
 // Re-export from DataContext for backward compatibility

@@ -34,7 +34,7 @@ function analyzeCashflow(data) {
   const totalInv = data.invs.reduce((s, i) => s + i.total, 0);
   const totalPaid = data.invs.reduce((s, i) => s + i.paid, 0);
   const ar = totalInv - totalPaid;
-  const expenses = data.jrnl.filter(j => !["売掛金", "普通預金"].includes(j.dr.acc)).reduce((s, j) => s + j.dr.amt, 0);
+  const expenses = data.jrnl.filter(j => !["売掛金", "普通預金", "現金", "未収入金", "買掛金", "未払金", "棚卸資産", "固定資産", "売上高"].includes(j.dr.acc)).reduce((s, j) => s + j.dr.amt, 0);
   const payroll = data.emps.reduce((s, e) => s + e.sal, 0);
   const cash = 500000 + 8500000;
   const monthlyBurn = expenses + payroll;

@@ -410,11 +410,11 @@ export function AcctView({ data, setData }) {
   const [newJrnl, setNewJrnl] = useState({ date: today(), desc: "", drAcc: "消耗品費", drAmt: "", crAcc: "現金", crAmt: "" });
 
   const tS = data.jrnl.filter(j => j.cr.acc === "売上高").reduce((s, j) => s + j.cr.amt, 0);
-  const tE = data.jrnl.filter(j => !["売掛金", "普通預金"].includes(j.dr.acc)).reduce((s, j) => s + j.dr.amt, 0);
+  const tE = data.jrnl.filter(j => !["売掛金", "普通預金", "現金", "未収入金", "買掛金", "未払金", "棚卸資産", "固定資産", "売上高"].includes(j.dr.acc)).reduce((s, j) => s + j.dr.amt, 0);
   const autoCount = data.jrnl.filter(j => j.auto).length;
   const manualCount = data.jrnl.length - autoCount;
 
-  const accounts = ["現金", "普通預金", "売掛金", "棚卸資産", "固定資産", "買掛金", "未払金", "売上高", "売上原価", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "雑費", "資本金", "利益剰余金"];
+  const accounts = ["現金", "普通預金", "売掛金", "未収入金", "棚卸資産", "固定資産", "買掛金", "未払金", "仮受消費税", "売上高", "雑収入", "売上原価", "仕入高", "外注費", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "広告宣伝費", "支払手数料", "雑費", "雑損失", "資本金", "利益剰余金"];
 
   // Account summary for trial balance
   const accSummary = {};
@@ -518,7 +518,7 @@ export function AcctView({ data, setData }) {
             <Btn variant="primary" size="sm" onClick={() => setShowAcctAdd(true)}><IcPlus /> 科目追加</Btn>
           </div>
           {(() => {
-            const cats = { "資産": ["現金", "普通預金", "売掛金", "棚卸資産", "固定資産"], "負債": ["買掛金", "未払金"], "純資産": ["資本金", "利益剰余金"], "収益": ["売上高"], "費用": ["売上原価", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "雑費"] };
+            const cats = { "資産": ["現金", "普通預金", "売掛金", "未収入金", "棚卸資産", "固定資産"], "負債": ["買掛金", "未払金", "仮受消費税"], "純資産": ["資本金", "利益剰余金"], "収益": ["売上高", "雑収入"], "費用": ["売上原価", "仕入高", "外注費", "給与手当", "法定福利費", "地代家賃", "消耗品費", "通信費", "旅費交通費", "広告宣伝費", "支払手数料", "雑費", "雑損失"] };
             return Object.entries(cats).map(([cat, accs]) => (
               <div key={cat} style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: cat === "資産" ? P : cat === "負債" ? "#A32D2D" : cat === "純資産" ? "#0F6E56" : cat === "収益" ? "#0F6E56" : "#BA7517", marginBottom: 6, padding: "6px 0", borderBottom: "1px solid var(--border-light)" }}>{cat}</div>
@@ -1405,6 +1405,10 @@ export function AutoLogView({ data }) {
     { from: "入金登録", actions: ["売掛金消込仕訳"], color: A, icon: "[資金]" },
     { from: "給与確定", actions: ["給与仕訳自動生成", "社会保険仕訳自動生成"], color: "#854F0B", icon: "" },
     { from: "請求書発行", actions: ["売上計上仕訳"], color: "#0F6E56", icon: "" },
+    { from: "POS会計", actions: ["売上仕訳自動生成", "在庫自動引落", "決済代行債権を登録"], color: P, icon: "" },
+    { from: "決済代行入金", actions: ["未収入金消込", "決済手数料計上"], color: A, icon: "" },
+    { from: "仕入計上", actions: ["買掛金仕訳自動生成", "資金繰り予定へ反映"], color: "#854F0B", icon: "" },
+    { from: "支払登録", actions: ["買掛金消込仕訳", "全銀FBデータ出力"], color: "#0F6E56", icon: "" },
   ];
 
   // Stats

@@ -75,3 +75,9 @@ export function IcFile() {
 export function IcNotif() {
   return <svg {...p18}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M2 2l20 20"/></svg>;
 }
+export function IcPos() {
+  return <svg {...p18}><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="7" y1="20" x2="17" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>;
+}
+export function IcScale() {
+  return <svg {...p18}><line x1="12" y1="3" x2="12" y2="21"/><path d="M5 7h14"/><path d="M3 14l2-7 2 7a2 2 0 0 1-4 0z"/><path d="M17 14l2-7 2 7a2 2 0 0 1-4 0z"/><path d="M8 21h8"/></svg>;
+}
