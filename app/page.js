@@ -59,7 +59,7 @@ export default function TopPage() {
             <a href="#price">料金</a>
             <a href="#faq">よくある質問</a>
             <a href="/login" className={s.topNavLogin}>ログイン</a>
-            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topNavCTA}>お問い合わせ</a>
+            <a href="https://peaksmarketing.co.jp/contact/" target="_blank" rel="noopener" className={s.topNavCTA}>お問い合わせ</a>
           </nav>
           <button className={s.topHamburger} onClick={() => setMobileOpen(true)}>
             <span /><span /><span />
@@ -75,7 +75,7 @@ export default function TopPage() {
         <a href="#price" onClick={() => setMobileOpen(false)}>料金</a>
         <a href="#faq" onClick={() => setMobileOpen(false)}>よくある質問</a>
         <a href="/login" style={{ color: P, fontWeight: 700 }}>ログイン</a>
-        <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" style={{ background: P, color: '#fff', padding: '12px 36px', borderRadius: 50 }}>お問い合わせ</a>
+        <a href="https://peaksmarketing.co.jp/contact/" target="_blank" rel="noopener" style={{ background: P, color: '#fff', padding: '12px 36px', borderRadius: 50 }}>お問い合わせ</a>
       </div>
 
       {/* Hero */}
@@ -204,7 +204,7 @@ export default function TopPage() {
                 <li key={f}>{f}</li>
               ))}
             </ul>
-            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topPriceCTA}>導入のお問い合わせ</a>
+            <a href="https://peaksmarketing.co.jp/contact/" target="_blank" rel="noopener" className={s.topPriceCTA}>導入のお問い合わせ</a>
           </div>
         </div>
       </section>
@@ -247,7 +247,7 @@ export default function TopPage() {
         <h2>経営のすべてを、<br />AIが自動化</h2>
         <p>まずは無料でOperaiを体験してください</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener" className={s.topCTABtn}>導入のお問い合わせ</a>
+          <a href="https://peaksmarketing.co.jp/contact/" target="_blank" rel="noopener" className={s.topCTABtn}>導入のお問い合わせ</a>
           <a href="/login" className={s.topCTABtnOutline}>ログイン</a>
         </div>
       </section>

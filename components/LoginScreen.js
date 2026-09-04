@@ -172,7 +172,7 @@ export default function LoginScreen() {
 
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <span style={{ fontSize: 13, color: '#999' }}>アカウントをお持ちでない方は</span><br />
-            <a href="https://peaksmarketing.co.jp/company/profile/" target="_blank" rel="noopener"
+            <a href="https://peaksmarketing.co.jp/contact/" target="_blank" rel="noopener"
               style={{ color: P, fontSize: 13, textDecoration: 'underline', marginTop: 4, display: 'inline-block' }}>
               お問い合わせください
             </a>
